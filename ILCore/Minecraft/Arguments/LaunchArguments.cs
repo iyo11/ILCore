@@ -20,6 +20,7 @@ namespace ILCore.Minecraft.Arguments
             var arguments = JsonConvert.DeserializeObject<JsonArguments>(jArgumentsToken.ToString());
             argumentsStrings = arguments.Jvm.OfType<string>().ToArray();
 
+
             return string.Join(" ", Array.ConvertAll(argumentsStrings, argument => $"\"{argument}\""));
         }
 

@@ -35,6 +35,7 @@ namespace ILCore.Launch
             process.WaitForExit();
             process.Close();
 
+
             return process;
         }
     }

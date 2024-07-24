@@ -69,6 +69,7 @@ namespace ILCore.Minecraft.Libraries
             }
         }
 
+
         private Library FormatArtifact(JsonLibrary library)
         {
             var nameArgs = library.Name.Split(':');

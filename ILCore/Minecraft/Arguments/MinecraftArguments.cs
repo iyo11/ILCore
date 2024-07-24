@@ -17,7 +17,6 @@ namespace ILCore.Minecraft.Arguments
         private readonly UserType _userType;
         private readonly string _userProperties;
         private readonly string _versionType;
-
         public MinecraftArguments(string userName, string versionName, string gameDir, string assetDir, string assetsIndex, string uuid, string accessToken, UserType userType, string userProperties, string versionType)
         {
             _userName = userName;

@@ -19,7 +19,6 @@ namespace ILCore.Launch
             var versionObj = JObject.Parse(json);
             var librariesObj = versionObj["libraries"];
 
-
             var argumentsBuilder = new StringBuilder();
             var nativesPath = $@"-Djava.library.path={minecraftPath}\versions\{versionName}\natives";
             var assetDir = $@"{minecraftPath}\assets";
