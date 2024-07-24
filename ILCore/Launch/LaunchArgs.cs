@@ -2,14 +2,13 @@
 using ILCore.Minecraft.Libraries;
 using ILCore.Model.Enum;
 using Newtonsoft.Json.Linq;
-using System.IO;
 using System.Text;
 
 namespace ILCore.Launch
 {
     public class LaunchArgs
     {
-        public string PrepareArguments(string versionName, string minecraftPath, string maxMemory, string jvmArgs, string username)
+        public string PrepareArguments(string versionName, string minecraftPath, string maxMemory, string jvmArgs, string userName)
         {
             var versionPath = $@"{minecraftPath}\versions\{versionName}";
             var jvmMemoryArgs =
@@ -29,10 +28,10 @@ namespace ILCore.Launch
             }
 
             var minecraftArgument = new MinecraftArguments(
-                userName: username,
+                userName: userName,
                 versionName: versionObj["id"]?.ToString(),
                 gameDir: $@"{minecraftPath}\versions\{versionName}",
-                assetDir: assetDir,
+                assetsDir: assetsDir,
                 assetsIndex: assetsIndex,
                 uuid: "{}",
                 accessToken: "{}",

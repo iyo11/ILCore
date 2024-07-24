@@ -10,19 +10,19 @@ namespace ILCore.Minecraft.Arguments
         private readonly string _userName;
         private readonly string _versionName;
         private readonly string _gameDir;
-        private readonly string _assetDir;
+        private readonly string _assetsDir;
         private readonly string _assetsIndex;
         private readonly string _uuid;
         private readonly string _accessToken;
         private readonly UserType _userType;
         private readonly string _userProperties;
         private readonly string _versionType;
-        public MinecraftArguments(string userName, string versionName, string gameDir, string assetDir, string assetsIndex, string uuid, string accessToken, UserType userType, string userProperties, string versionType)
+        public MinecraftArguments(string userName, string versionName, string gameDir, string assetsDir, string assetsIndex, string uuid, string accessToken, UserType userType, string userProperties, string versionType)
         {
             _userName = userName;
             _versionName = versionName;
             _gameDir = gameDir;
-            _assetDir = assetDir;
+            _assetsDir = assetsDir;
             _assetsIndex = assetsIndex;
             _uuid = uuid;
             _accessToken = accessToken;
@@ -61,8 +61,8 @@ namespace ILCore.Minecraft.Arguments
                     "${auth_player_name}" => _userName,
                     "${version_name}" => _versionName,
                     "${game_directory}" => _gameDir,
-                    "${game_assets}" => _assetDir,
-                    "${assets_root}" => _assetDir,
+                    "${game_assets}" => _assetsDir,
+                    "${assets_root}" => _assetsDir,
                     "${assets_index_name}" => _assetsIndex,
                     "${auth_uuid}" => _uuid,
                     "${auth_access_token}" => _accessToken,
