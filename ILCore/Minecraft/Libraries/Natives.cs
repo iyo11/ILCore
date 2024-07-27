@@ -1,7 +1,6 @@
-﻿namespace ILCore.Minecraft.Libraries
-{
-    internal class Natives
-    {
+﻿namespace ILCore.Minecraft.Libraries;
 
-    }
+internal class Natives
+{
+
 }

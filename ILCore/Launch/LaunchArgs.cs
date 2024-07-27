@@ -1,6 +1,5 @@
 ﻿using ILCore.Minecraft.Arguments;
 using ILCore.Minecraft.Libraries;
-using ILCore.Model.Enum;
 using Newtonsoft.Json.Linq;
 using System.Text;
 
@@ -20,11 +19,11 @@ namespace ILCore.Launch
 
             var argumentsBuilder = new StringBuilder();
             var nativesPath = $@"-Djava.library.path={minecraftPath}\versions\{versionName}\natives";
-            var assetDir = $@"{minecraftPath}\assets";
+            var assetsDir = $@"{minecraftPath}\assets";
             var assetsIndex = versionObj["assetIndex"]?["id"]?.ToString();
             if (assetsIndex is not null && assetsIndex.Equals("legacy"))
             {
-                assetDir = $@"{minecraftPath}\assets\virtual\legacy";
+                assetsDir = $@"{minecraftPath}\assets\virtual\legacy";
             }
 
             var minecraftArgument = new MinecraftArguments(

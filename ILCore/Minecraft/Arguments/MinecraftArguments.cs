@@ -1,7 +1,6 @@
-﻿using ILCore.Model.JsonObject;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using ILCore.Model.Enum;
+using ILCore.Launch;
 
 namespace ILCore.Minecraft.Arguments
 {
