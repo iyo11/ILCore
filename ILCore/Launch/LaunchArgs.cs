@@ -30,7 +30,7 @@ namespace ILCore.Launch
             var minecraftArgument = new MinecraftArguments(
                 userName: launchInfo.UserProfile.Name,
                 versionName: versionObj["id"]?.ToString(),
-                gameDir: $@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}",
+                gameDir: launchInfo.AbsoluteVersion?$@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}":launchInfo.MinecraftPath,
                 assetsDir: assetsDir,
                 assetsIndex: assetsIndex,
                 uuid: launchInfo.UserProfile.Id,
