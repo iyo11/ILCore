@@ -37,7 +37,8 @@ namespace ILCore.Launch
                 accessToken: launchInfo.UserProfile.AccessToken,
                 userType: launchInfo.UserProfile.UserType,
                 userProperties: "{}",
-                versionType: $"{versionObj["type"]?.ToString().ToUpper()}/{launchInfo.LauncherName}"
+                //versionType: $"{versionObj["type"]?.ToString().ToUpper()}/{launchInfo.LauncherName}/{launchInfo.CustomArgs}"
+                versionType: launchInfo.CustomArgs
             );
             var minecraftArguments = minecraftArgument.ToMinecraftArguments(versionObj);
 
@@ -98,8 +99,10 @@ namespace ILCore.Launch
                 argumentsBuilder.Append($" {minecraftArguments} ");
             }
 
-
-            argumentsBuilder.Append(" --width 854 --height 480");
+            argumentsBuilder.Append($" --server {launchInfo.ServerAddress} --port {launchInfo.Port}");
+            argumentsBuilder.Append($" --width {launchInfo.WindowWidth} --height {launchInfo.WindowHeight}");
+            if (launchInfo.Fullscreen) argumentsBuilder.Append(" --fullscreen");
+            
             var arguments = argumentsBuilder.ToString();
 
             return arguments;

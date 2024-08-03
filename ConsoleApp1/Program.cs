@@ -34,9 +34,9 @@ const string redirectUri = "http://localhost:29116/authentication-response";
 const string scope = "XboxLive.signin offline_access";
 
 var minecraftOAuth2 = new MicrosoftOAuth2(clientId:clientId,redirectUri:redirectUri,new RedirectMessage());
-var userProfile = await minecraftOAuth2.AuthorizeAsync();
+//var userProfile = await minecraftOAuth2.AuthorizeAsync();
 
-//var userProfile = new LegacyUserProfile { Name = "IYO" };
+var userProfile = new LegacyUserProfile { Name = "IYO" };
 
 LaunchArgs launchArgs = new();
 var info = new LaunchInfo
@@ -48,7 +48,13 @@ var info = new LaunchInfo
     JvmArgs = jvmArgs,
     UserProfile = userProfile,
     LauncherName = "ILCore",
-    LauncherVersion = "001"
+    LauncherVersion = "001",
+    CustomArgs = "ILCore",
+    Fullscreen = false,
+    ServerAddress = "127.0.0.1",
+    Port = "25565",
+    WindowWidth = 1280,
+    WindowHeight = 720
 };
 var launchArg = launchArgs.PrepareArguments(info);
 

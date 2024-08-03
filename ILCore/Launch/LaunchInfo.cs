@@ -4,7 +4,6 @@ namespace ILCore.Launch;
 
 public class LaunchInfo
 {
-    //string versionName, string minecraftPath, string maxMemory, string jvmArgs, string userName, UserType userType, UserProfile userProfile
     public string VersionName { get; set; }
     public bool AbsoluteVersion { get; set; }
     public string MinecraftPath { get; set; }
@@ -13,5 +12,11 @@ public class LaunchInfo
     public UserProfile UserProfile { get; set; }
     public string LauncherName { get; set; }
     public string LauncherVersion { get; set; }
-    
+    public string CustomArgs { get; set; }
+    public string WindowTitle { get; set; }
+    public string ServerAddress { get; set; }
+    public string Port { get; set; }
+    public bool Fullscreen { get; set; }
+    public int WindowWidth { get; set; }
+    public int WindowHeight { get; set; }
 }
