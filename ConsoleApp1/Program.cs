@@ -43,6 +43,7 @@ LaunchArgs launchArgs = new();
 var info = new LaunchInfo
 {
     VersionName = versionName,
+    AbsoluteVersion = true,
     MinecraftPath = minecraftPath,
     MaxMemory = maxMemory,
     JvmArgs = jvmArgs,
