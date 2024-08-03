@@ -35,8 +35,8 @@ namespace UnitTest.Launch
             const string jvmArgs = " -XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true";
 
             LaunchArgs launchArgs = new();
-            var args = launchArgs.PrepareArguments(versionName, minecraftPath, maxMemory, jvmArgs, "IYOII");
-            Console.WriteLine(args);
+            //var args = launchArgs.PrepareArguments(versionName, minecraftPath, maxMemory, jvmArgs, "IYOII");
+            //Console.WriteLine(args);
             //MinecraftProcess minecraftProcess = new();
             //minecraftProcess.Launch(javaPath,args);
         }

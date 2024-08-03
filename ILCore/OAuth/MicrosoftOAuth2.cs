@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using ILCore.Launch;
 using ILCore.OAuth.MicrosoftOAuth;
 using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
@@ -14,17 +15,27 @@ public class MicrosoftOAuth2
     private readonly string _clientId;
     private readonly string _redirectUri;
     private readonly string _scope;
+    private readonly RedirectMessage _redirectMessage;
     
-    public MicrosoftOAuth2(string clientId, string redirectUri, string scope = "XboxLive.signin offline_access")
+    public MicrosoftOAuth2(string clientId, string redirectUri,RedirectMessage redirectMessage, string scope = "XboxLive.signin offline_access")
     {
         _clientId = clientId;
         _redirectUri = redirectUri;
         _scope = scope;
+        _redirectMessage = redirectMessage;
     }
+
+
+    /*
+    public async Task<UserProfile> RefreshAsync(string refreshToken)
+    {
+        var userProfile = new UserProfile();
+    }
+    */
     
     public async Task<UserProfile> AuthorizeAsync()
     {
-        var userProfile = new UserProfile();
+        var userProfile = new MsaUserProfile();
         
         if (!HttpListener.IsSupported)
         {
@@ -85,9 +96,10 @@ public class MicrosoftOAuth2
                 var minecraftToken = await minecraftAuth.MinecraftAuthAsync(xtstAuthToken);
 
                 var profile = await minecraftAuth.GetProfileAsync(minecraftToken);
-                userProfile = JsonConvert.DeserializeObject<UserProfile>(profile.ToString());
-                
-                buffer = new RedirectPage(new RedirectMessage(),AuthStatus.Success).ToPageBuffers();
+                userProfile = JsonConvert.DeserializeObject<MsaUserProfile>(profile.ToString());
+                userProfile.RefreshToken = microsoftAuthToken.RefreshToken;
+                userProfile.AccessToken = minecraftToken;
+                buffer = new RedirectPage(_redirectMessage,AuthStatus.Success).ToPageBuffers();
             }
             else
             {
@@ -100,7 +112,8 @@ public class MicrosoftOAuth2
         }
         catch (Exception e)
         {
-            buffer = new RedirectPage(new RedirectMessage(contentError: e.ToString()),AuthStatus.Error).ToPageBuffers();
+            _redirectMessage.ContentError = e.ToString();
+            buffer = new RedirectPage(_redirectMessage,AuthStatus.Error).ToPageBuffers();
             if (context != null)
             {
                 var response = context.Response;

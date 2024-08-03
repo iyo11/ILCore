@@ -1,9 +1,30 @@
-﻿namespace ILCore.OAuth.MinecraftOAuth;
+﻿using ILCore.Launch;
 
-public class UserProfile
+namespace ILCore.OAuth.MinecraftOAuth;
+
+public abstract class UserProfile
 {
     public string Id { get; set; }
     public string Name { get; set; }
+    public string AccessToken { get; set; }
+    public UserType UserType { get; set; }
+    public string RefreshToken { get; set; }
+}
+
+public class LegacyUserProfile : UserProfile
+{
+    public LegacyUserProfile()
+    {
+        UserType = UserType.legacy;
+        Id = "{}";
+        RefreshToken = "{}";
+        AccessToken = "{}";
+    }
+}
+
+public class MsaUserProfile : UserProfile
+{
+    public UserType UserType => UserType.msa;
     public Skin[] Skins { get; set; }
     public object[] Capes { get; set; }
     public ProfileActions ProfileActions { get; set; }

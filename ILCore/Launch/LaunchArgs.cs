@@ -3,40 +3,41 @@ using ILCore.Minecraft.Libraries;
 using Newtonsoft.Json.Linq;
 using System.Text;
 
+
 namespace ILCore.Launch
 {
     public class LaunchArgs
     {
-        public string PrepareArguments(string versionName, string minecraftPath, string maxMemory, string jvmArgs, string userName)
+        public string PrepareArguments(LaunchInfo launchInfo)
         {
-            var versionPath = $@"{minecraftPath}\versions\{versionName}";
+            var versionPath = $@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}";
             var jvmMemoryArgs =
-                $"-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump -Xmn921m -Xmx{maxMemory}m";
-            var json = File.ReadAllText($@"{versionPath}\{versionName}.json");
+                $"-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump -Xmn921m -Xmx{launchInfo.MaxMemory}m";
+            var json = File.ReadAllText($@"{versionPath}\{launchInfo.VersionName}.json");
 
             var versionObj = JObject.Parse(json);
             var librariesObj = versionObj["libraries"];
 
             var argumentsBuilder = new StringBuilder();
-            var nativesPath = $@"-Djava.library.path={minecraftPath}\versions\{versionName}\natives";
-            var assetsDir = $@"{minecraftPath}\assets";
+            var nativesPath = $@"-Djava.library.path={launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}\natives";
+            var assetsDir = $@"{launchInfo.MinecraftPath}\assets";
             var assetsIndex = versionObj["assetIndex"]?["id"]?.ToString();
             if (assetsIndex is not null && assetsIndex.Equals("legacy"))
             {
-                assetsDir = $@"{minecraftPath}\assets\virtual\legacy";
+                assetsDir = $@"{launchInfo.MinecraftPath}\assets\virtual\legacy";
             }
 
             var minecraftArgument = new MinecraftArguments(
-                userName: userName,
+                userName: launchInfo.UserProfile.Name,
                 versionName: versionObj["id"]?.ToString(),
-                gameDir: $@"{minecraftPath}\versions\{versionName}",
+                gameDir: $@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}",
                 assetsDir: assetsDir,
                 assetsIndex: assetsIndex,
-                uuid: "{}",
-                accessToken: "{}",
-                userType: UserType.legacy,
+                uuid: launchInfo.UserProfile.Id,
+                accessToken: launchInfo.UserProfile.AccessToken,
+                userType: launchInfo.UserProfile.UserType,
                 userProperties: "{}",
-                versionType: versionObj["type"]?.ToString()
+                versionType: $"{versionObj["type"]?.ToString().ToUpper()}/{launchInfo.LauncherName}"
             );
             var minecraftArguments = minecraftArgument.ToMinecraftArguments(versionObj);
 
@@ -45,7 +46,7 @@ namespace ILCore.Launch
             {
                 var libraries = new Libraries();
                 var enumerableLibs = libraries.ToLibraries(librariesObj);
-
+                
                 //取高版本Libs
                 enumerableLibs = enumerableLibs
                     .Where(lib => lib.Type != LibraryType.Native) // 排除Native类型库
@@ -62,12 +63,12 @@ namespace ILCore.Launch
                 {
                     if (library.Type is not LibraryType.Native)
                     {
-                        libraryArgumentsBuilder.Append($@"{minecraftPath}\libraries\{library.Path.Replace("/", @"\")};");
+                        libraryArgumentsBuilder.Append($@"{launchInfo.MinecraftPath}\libraries\{library.Path.Replace("/", @"\")};");
                     }
                 }
             }
 
-            libraryArgumentsBuilder.Append($@"{minecraftPath}\versions\{versionName}\{versionName}.jar");
+            libraryArgumentsBuilder.Append($@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}\{launchInfo.VersionName}.jar");
 
             if (versionObj["arguments"] is not null)
             {
@@ -75,22 +76,22 @@ namespace ILCore.Launch
 
                 var launchArguments = launchArgument.ToLaunchArguments(versionObj);
                 launchArguments = launchArguments?
-                    .Replace("${natives_directory}", $@"{minecraftPath}\versions\{versionName}\natives")
-                    .Replace("${launcher_name}", "Minecraft")
-                    .Replace("${launcher_version}", "0.1")
+                    .Replace("${natives_directory}", $@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}\natives")
+                    .Replace("${launcher_name}", $"{launchInfo.LauncherName}")
+                    .Replace("${launcher_version}", $"{launchInfo.LauncherVersion}")
                     .Replace("${classpath}", libraryArgumentsBuilder.ToString())
-                    .Replace("${version_name}", versionName)
-                    .Replace("${library_directory}", $@"{minecraftPath}\libraries")
+                    .Replace("${version_name}", launchInfo.VersionName)
+                    .Replace("${library_directory}", $@"{launchInfo.MinecraftPath}\libraries")
                     .Replace("${classpath_separator}", ";");
 
-                argumentsBuilder.Append($"{jvmArgs} {jvmMemoryArgs} {launchArguments} ");
+                argumentsBuilder.Append($"{launchInfo.JvmArgs} {jvmMemoryArgs} {launchArguments} ");
                 argumentsBuilder.Append($" {versionObj["mainClass"]} ");
                 argumentsBuilder.Append($" {minecraftArguments} ");
             }
             else
             {
                 //jvmArgs = $"-XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true";
-                argumentsBuilder.Append($"{jvmArgs} {jvmMemoryArgs} {nativesPath} ");
+                argumentsBuilder.Append($"{launchInfo.JvmArgs} {jvmMemoryArgs} {nativesPath} ");
                 argumentsBuilder.Append("-cp ");
                 argumentsBuilder.Append(libraryArgumentsBuilder);
                 argumentsBuilder.Append($" {versionObj["mainClass"]} ");

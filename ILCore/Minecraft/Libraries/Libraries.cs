@@ -6,6 +6,14 @@ namespace ILCore.Minecraft.Libraries;
 
 public class Libraries
 {
+    public IEnumerable<Library> GetLibraries(string minecraftPath,string versionName)
+    {
+        var versionPath = $@"{minecraftPath}\versions\{versionName}";
+        var json = File.ReadAllText($@"{versionPath}\{versionName}.json");
+        var jLibrariesToken = JToken.Parse(json).SelectToken("libraries");
+        return ToLibraries(jLibrariesToken);
+    }
+    
     public IEnumerable<Library> ToLibraries(JToken jLibrariesToken)
     {
         var libraries = JsonConvert.DeserializeObject<IEnumerable<JsonLibrary>>(jLibrariesToken.ToString());
@@ -66,8 +74,7 @@ public class Libraries
         }
     }
 
-
-    private Library FormatArtifact(JsonLibrary library)
+   private Library FormatArtifact(JsonLibrary library)
     {
         var nameArgs = library.Name.Split(':');
         var fileInfo = library.Downloads?.Artifact;
@@ -123,8 +130,7 @@ public class Libraries
 
         return lib;
     }
-
-
+   
     private Library FormatClassifiers(string os, JsonLibrary library)
     {
         var nameArgs = library.Name.Split(':');
