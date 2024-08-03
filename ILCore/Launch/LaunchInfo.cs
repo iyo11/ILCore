@@ -12,5 +12,4 @@ public class LaunchInfo
     public UserProfile UserProfile { get; set; }
     public string LauncherName { get; set; }
     public string LauncherVersion { get; set; }
-    public bool AbsoluteVersion { get; set; }
 }

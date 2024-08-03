@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using ILCore.Launch;
 using ILCore.OAuth.MicrosoftOAuth;
 using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
@@ -118,7 +119,7 @@ public class MicrosoftOAuth2
                 var response = context.Response;
                 response.ContentLength64 = buffer.Length;
                 await using var output = response.OutputStream;
-                await output.WriteAsync(buffer);
+                await output.WriteAsync(buffer, 0, buffer.Length);
             }
         }
         finally

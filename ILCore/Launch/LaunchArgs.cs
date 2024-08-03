@@ -26,13 +26,11 @@ namespace ILCore.Launch
             {
                 assetsDir = $@"{launchInfo.MinecraftPath}\assets\virtual\legacy";
             }
-            
-            
 
             var minecraftArgument = new MinecraftArguments(
                 userName: launchInfo.UserProfile.Name,
                 versionName: versionObj["id"]?.ToString(),
-                gameDir: launchInfo.AbsoluteVersion?$@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}":launchInfo.MinecraftPath,
+                gameDir: $@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}",
                 assetsDir: assetsDir,
                 assetsIndex: assetsIndex,
                 uuid: launchInfo.UserProfile.Id,
