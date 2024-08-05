@@ -48,7 +48,7 @@ public class MicrosoftOAuth2
 
         var redirectUri = _redirectUri + "/";
         
-        var authUri = NetClient.BuildUrl("https://login.live.com/oauth20_authorize.srf",
+        var authUri = NetWorkClient.BuildUrl("https://login.live.com/oauth20_authorize.srf",
             new SortedDictionary<string, string>
             {
                 { "client_id", _clientId },
@@ -119,7 +119,7 @@ public class MicrosoftOAuth2
                 var response = context.Response;
                 response.ContentLength64 = buffer.Length;
                 await using var output = response.OutputStream;
-                await output.WriteAsync(buffer, 0, buffer.Length);
+                await output.WriteAsync(buffer);
             }
         }
         finally

@@ -42,11 +42,9 @@ namespace ILCore.Minecraft.Arguments
 
             var jArgumentsToken = versionObj["arguments"];
 
-            if (jArgumentsToken is not null)
-            {
-                var arguments = JsonConvert.DeserializeObject<JsonArguments>(jArgumentsToken.ToString());
-                gameArguments = PutMinecraftArguments(arguments.Game.OfType<string>().ToArray());
-            }
+            if (jArgumentsToken is null) return gameArguments;
+            var arguments = JsonConvert.DeserializeObject<JsonArguments>(jArgumentsToken.ToString());
+            gameArguments = PutMinecraftArguments(arguments.Game.OfType<string>().ToArray());
             return gameArguments;
         }
 

@@ -1,7 +1,7 @@
 ﻿using System.IO.Compression;
 
 namespace ILCore.Util;
-public static class ZipFactory
+public static class Compress
 {
     public static async Task ExtractJarAsync(string sourceJarPath, string targetDirectory, string[] excludePatterns)
     {

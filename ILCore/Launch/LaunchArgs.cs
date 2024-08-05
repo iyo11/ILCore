@@ -8,12 +8,12 @@ namespace ILCore.Launch
 {
     public class LaunchArgs
     {
-        public string PrepareArguments(LaunchInfo launchInfo)
+        public async Task<string> PrepareArguments(LaunchInfo launchInfo)
         {
             var versionPath = $@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}";
             var jvmMemoryArgs =
                 $"-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump -Xmn921m -Xmx{launchInfo.MaxMemory}m";
-            var json = File.ReadAllText($@"{versionPath}\{launchInfo.VersionName}.json");
+            var json = await File.ReadAllTextAsync($@"{versionPath}\{launchInfo.VersionName}.json");
 
             var versionObj = JObject.Parse(json);
             var librariesObj = versionObj["libraries"];
@@ -99,7 +99,17 @@ namespace ILCore.Launch
                 argumentsBuilder.Append($" {minecraftArguments} ");
             }
 
-            argumentsBuilder.Append($" --server {launchInfo.ServerAddress} --port {launchInfo.Port}");
+            if (!string.IsNullOrEmpty(launchInfo.ServerAddress))
+            {
+                argumentsBuilder.Append($" --server {launchInfo.ServerAddress}");
+                if (!string.IsNullOrEmpty(launchInfo.Port))
+                    argumentsBuilder.Append($" --port {launchInfo.Port}");
+                else
+                    argumentsBuilder.Append($" --port 25565");
+                
+            }
+            
+
             argumentsBuilder.Append($" --width {launchInfo.WindowWidth} --height {launchInfo.WindowHeight}");
             if (launchInfo.Fullscreen) argumentsBuilder.Append(" --fullscreen");
             

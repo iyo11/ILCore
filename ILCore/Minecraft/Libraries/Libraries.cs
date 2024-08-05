@@ -6,10 +6,10 @@ namespace ILCore.Minecraft.Libraries;
 
 public class Libraries
 {
-    public IEnumerable<Library> GetLibraries(string minecraftPath,string versionName)
+    public async Task<IEnumerable<Library>> GetLibraries(string minecraftPath,string versionName)
     {
         var versionPath = $@"{minecraftPath}\versions\{versionName}";
-        var json = File.ReadAllText($@"{versionPath}\{versionName}.json");
+        var json = await File.ReadAllTextAsync($@"{versionPath}\{versionName}.json");
         var jLibrariesToken = JToken.Parse(json).SelectToken("libraries");
         return ToLibraries(jLibrariesToken);
     }

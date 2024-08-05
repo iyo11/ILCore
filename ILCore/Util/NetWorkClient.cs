@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ILCore.Util;
 
-public static class NetClient
+public static class NetWorkClient
 {
     private static readonly HttpClient HttpClient = new();
     
@@ -97,7 +97,7 @@ public static class NetClient
                 .Append(WebUtility.UrlEncode(item.Value))
                 .Append('&');
         }
-
+        
         return stringBuilder.ToString();
 
     }

@@ -23,7 +23,7 @@ const string minecraftPath = @"G:\Minecraft\.minecraft";
 
 //Success
 
-const string versionName = "1.12.2";
+const string versionName = "1.12.2-Forge_14.23.5.2859";
 
 
 const string maxMemory = "4096";
@@ -38,6 +38,7 @@ var minecraftOAuth2 = new MicrosoftOAuth2(clientId:clientId,redirectUri:redirect
 
 var userProfile = new LegacyUserProfile { Name = "IYO" };
 
+
 LaunchArgs launchArgs = new();
 var info = new LaunchInfo
 {
@@ -51,21 +52,13 @@ var info = new LaunchInfo
     LauncherVersion = "001",
     CustomArgs = "ILCore",
     Fullscreen = false,
-    ServerAddress = "127.0.0.1",
-    Port = "25565",
     WindowWidth = 1280,
-    WindowHeight = 720
+    WindowHeight = 760
 };
-var launchArg = launchArgs.PrepareArguments(info);
+var launchArg = await launchArgs.PrepareArguments(info);
 
-Natives natives = new();
-var libs = new Libraries().GetLibraries(minecraftPath,versionName);
-
-await natives.Extract(minecraftPath, versionName, libs);
-
-MinecraftProcess minecraftProcess = new();
-Console.WriteLine(launchArg);
-minecraftProcess.Launch(javaPath,launchArg);
+await new Natives().Extract(minecraftPath, versionName);
+await new MinecraftProcess().PrepareProcess(javaPath,launchArg).Start();
 
 
 

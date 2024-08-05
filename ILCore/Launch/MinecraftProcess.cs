@@ -1,11 +1,33 @@
 ﻿using System.Diagnostics;
+using ILCore.Analyzer.Minecraft;
 
 namespace ILCore.Launch
 {
+    public interface IProcessStart
+    {
+        Task Start();
+    }
+
+    public class MinecraftProcessStart(Process process) : IProcessStart
+    {
+        public async Task Start()
+        {
+            process.Start();
+            process.BeginOutputReadLine();
+            await process.WaitForExitAsync();
+        }
+    }
+    
+    
+    
     public class MinecraftProcess
     {
-        public Process Launch(string javaPath, string arguments)
+        private readonly MinecraftLogAnalyzer _minecraftLogAnalyzer = new();
+        private readonly MinecraftCrashAnalyzer _minecraftCrashAnalyzer = new();
+        
+        public MinecraftProcessStart PrepareProcess(string javaPath, string arguments)
         {
+            List<MinecraftLog> minecraftCrashLogs = [];
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo(javaPath)
@@ -14,28 +36,28 @@ namespace ILCore.Launch
                     Arguments = arguments,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    RedirectStandardInput = true
+                    RedirectStandardInput = true,
                 }
             };
-            process.Start();
-
-            process.OutputDataReceived += (_, args) =>
+            
+            process.EnableRaisingEvents = true;
+            
+            process.OutputDataReceived += async (_, args) =>
             {
-                Console.WriteLine(args.Data);
+                var log = await _minecraftLogAnalyzer.Analyze(args.Data);
+                if (log.Type is MinecraftLogType.Fatal or MinecraftLogType.Error)
+                {
+                    minecraftCrashLogs.Add(log);
+                }
             };
-            process.ErrorDataReceived += (_, args) =>
+            
+            process.Exited += (_, args) =>
             {
-                Console.WriteLine(args.Data);
+                var crashes = _minecraftCrashAnalyzer.Analyze(minecraftCrashLogs);
+                
             };
-
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
-
-            process.WaitForExit();
-            process.Close();
-
-
-            return process;
+            
+            return  new MinecraftProcessStart(process);
         }
     }
 }

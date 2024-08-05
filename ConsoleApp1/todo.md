@@ -2,9 +2,10 @@
 
 ### Launch
 - [Feat] > Launch inherit version
-- [Feat] > Problem analyzer
+- [Feat] > Crash analyzer
 - [Feat] > Library & Assets check
 - [Feat] > Window title 
+- [Feat] > Auto set Minecraft language
 - ~~[Feat] > Auto into server & Full screen~~
 
 ### OAuth

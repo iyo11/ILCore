@@ -11,7 +11,7 @@ public class MinecraftAuth
     {
         var xtstParam = $"{xtstAuthToken.Uhs};{xtstAuthToken.XtstToken}";
         var minecraftAuthPostJson = "{" + $"\"identityToken\": \"XBL3.0 x={xtstParam}\"" + "}";
-        var minecraftAuthorizationJson = await NetClient.PostJsonAsync(
+        var minecraftAuthorizationJson = await NetWorkClient.PostJsonAsync(
             "https://api.minecraftservices.com/authentication/login_with_xbox",
             minecraftAuthPostJson,
             [new MediaTypeWithQualityHeaderValue("application/json")]);
@@ -21,7 +21,7 @@ public class MinecraftAuth
 
     public async Task<JObject> GetProfileAsync(string minecraftToken)
     {
-        var profileJson = await NetClient.GetAsync(
+        var profileJson = await NetWorkClient.GetAsync(
             "https://api.minecraftservices.com/minecraft/profile",
             new AuthenticationHeaderValue("Bearer",$"{minecraftToken}")
         );

@@ -4,8 +4,10 @@ namespace ILCore.Minecraft.Libraries;
 
 public class Natives
 {
-    public async Task Extract(string minecraftPath,string versionName,IEnumerable<Library> libraries)
+    public async Task Extract(string minecraftPath,string versionName)
     {
+        var libraries = await new Libraries().GetLibraries(minecraftPath,versionName);
+        
         var nativesFolder = $@"{minecraftPath}\versions\{versionName}\natives";
         
         //取高版本Libs
@@ -31,7 +33,7 @@ public class Natives
         {
             try
             {
-                await ZipFactory.ExtractJarAsync($@"{minecraftPath}\libraries\{nativeLibrary.Path}", nativesFolder,
+                await Compress.ExtractJarAsync($@"{minecraftPath}\libraries\{nativeLibrary.Path}", nativesFolder,
                     nativeLibrary.Exclude);
             }
             catch (Exception e)

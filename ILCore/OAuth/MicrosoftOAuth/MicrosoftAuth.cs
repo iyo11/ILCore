@@ -8,7 +8,7 @@ public class MicrosoftAuth
 {
     public async Task<MicrosoftAuthToken> MicrosoftAuthAsync(string authorizationCode, string clientId, string redirectUri, string scope)
     {
-        var microsoftAuthorizationJson = await NetClient.PostPairAsync(
+        var microsoftAuthorizationJson = await NetWorkClient.PostPairAsync(
             "https://login.live.com/oauth20_token.srf",
             new Dictionary<string, string>
             {
@@ -36,7 +36,7 @@ public class MicrosoftAuth
 
     public async Task<MicrosoftAuthToken> MicrosoftAuthRefreshAsync(string refreshCode, string clientId, string redirectUri, string scope)
     {
-        var microsoftAuthorizationJson = await NetClient.PostPairAsync(
+        var microsoftAuthorizationJson = await NetWorkClient.PostPairAsync(
             "https://login.live.com/oauth20_token.srf",
             new Dictionary<string, string>
             {

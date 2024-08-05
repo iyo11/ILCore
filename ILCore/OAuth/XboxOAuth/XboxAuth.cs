@@ -20,7 +20,7 @@ public class XboxAuth
             RelyingParty = "http://auth.xboxlive.com",
             TokenType = "JWT"
         });
-        var xboxAuthorizationJson = await NetClient.PostJsonAsync(
+        var xboxAuthorizationJson = await NetWorkClient.PostJsonAsync(
             "https://user.auth.xboxlive.com/user/authenticate",
             xboxAuthPostJson,
             [new MediaTypeWithQualityHeaderValue("application/json")]
@@ -45,7 +45,7 @@ public class XboxAuth
             RelyingParty = "rp://api.minecraftservices.com/",
             TokenType = "JWT"
         });
-        var xtstAuthorizationJson = await NetClient.PostJsonAsync(
+        var xtstAuthorizationJson = await NetWorkClient.PostJsonAsync(
             "https://xsts.auth.xboxlive.com/xsts/authorize",
             xtstAuthPostJson,
             [
