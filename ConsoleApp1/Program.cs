@@ -9,11 +9,13 @@ Console.WriteLine(userProfile.MinecraftToken);
 */
 
 
+using ILCore.Languages;
 using ILCore.Launch;
 using ILCore.Minecraft.Libraries;
 using ILCore.OAuth;
 using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
+using ILCore.Util;
 
 const string javaPath = @"C:\Program Files\Java\jdk1.8.0_202\jre\bin\javaw.exe";
 //const string javaPath = @"C:\Users\IYO\AppData\Roaming\.minecraft\runtime\java-runtime-delta\bin\java.exe";
@@ -58,7 +60,20 @@ var info = new LaunchInfo
 var launchArg = await launchArgs.PrepareArguments(info);
 
 await new Natives().Extract(minecraftPath, versionName);
-await new MinecraftProcess().PrepareProcess(javaPath,launchArg).Start();
+var minecraftProcess = new MinecraftProcessBuilder().BuildProcess(javaPath,launchArg);
 
+minecraftProcess.MinecraftLogOutPut += (sender, minecraftLog) =>
+{
+    Console.WriteLine(minecraftLog.Message);
+};
 
+minecraftProcess.MinecraftLogCrash += (sender, errors) =>
+{
+    foreach (var log in errors)
+    {
+        //Console.WriteLine(log);
+    }
+};
+
+await minecraftProcess.Start();
 

@@ -24,7 +24,10 @@ public class LegacyUserProfile : UserProfile
 
 public class MsaUserProfile : UserProfile
 {
-    public UserType UserType => UserType.msa;
+    public MsaUserProfile()
+    {
+        UserType = UserType.msa;
+    }
     public Skin[] Skins { get; set; }
     public object[] Capes { get; set; }
     public ProfileActions ProfileActions { get; set; }

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace ILCore.Util
 {
@@ -15,5 +16,8 @@ namespace ILCore.Util
         public static readonly string Architecture = RuntimeInformation.OSArchitecture.ToString();
 
         public static readonly bool Is64Bit = Environment.Is64BitOperatingSystem;
+        
+        public static readonly string Lang = CultureInfo.CurrentCulture.Name.Replace("-", "_");
+        
     }
 }

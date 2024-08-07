@@ -8,26 +8,60 @@ namespace ILCore.Launch
         Task Start();
     }
 
-    public class MinecraftProcessStart(Process process) : IProcessStart
+    public class MinecraftProcess : IProcessStart
     {
+        public event EventHandler<MinecraftLog> MinecraftLogOutPut;
+        public event EventHandler<IEnumerable<string>> MinecraftLogCrash;
+        public Process Process { get; set; }
+        private readonly MinecraftLogAnalyzer _minecraftLogAnalyzer = new();
+        private readonly MinecraftCrashAnalyzer _minecraftCrashAnalyzer = new();
+        
+        public MinecraftProcess(Process process)
+        {
+            Process = process;
+            List<MinecraftLog> minecraftCrashLogs = [];
+            
+            process.OutputDataReceived += async (s,args) =>
+            {
+                var log = await _minecraftLogAnalyzer.Analyze(args.Data);
+                if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
+                    minecraftCrashLogs.Add(log);
+                MinecraftLogOutPut?.Invoke(s,log);
+            };
+            process.ErrorDataReceived += async (s,args) =>
+            {
+                var log = await _minecraftLogAnalyzer.Analyze(args.Data);
+                if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
+                    minecraftCrashLogs.Add(log);
+                MinecraftLogOutPut?.Invoke(s,log);
+            };
+            
+            process.Exited += (s,args) =>
+            {
+                foreach (var minecraftCrashLog in minecraftCrashLogs)
+                {
+                    Console.WriteLine(minecraftCrashLog.ToString());
+                }
+                var crash = _minecraftCrashAnalyzer.Analyze(minecraftCrashLogs);
+                MinecraftLogCrash?.Invoke(s,crash);
+            };
+        }
+        
         public async Task Start()
         {
-            process.Start();
-            process.BeginOutputReadLine();
-            await process.WaitForExitAsync();
+            Process.Start();
+            Process.BeginOutputReadLine();
+            Process.BeginErrorReadLine();
+            await Process.WaitForExitAsync();
         }
     }
     
     
     
-    public class MinecraftProcess
+    public class MinecraftProcessBuilder
     {
-        private readonly MinecraftLogAnalyzer _minecraftLogAnalyzer = new();
-        private readonly MinecraftCrashAnalyzer _minecraftCrashAnalyzer = new();
-        
-        public MinecraftProcessStart PrepareProcess(string javaPath, string arguments)
+        public MinecraftProcess BuildProcess(string javaPath, string arguments)
         {
-            List<MinecraftLog> minecraftCrashLogs = [];
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo(javaPath)
@@ -39,25 +73,8 @@ namespace ILCore.Launch
                     RedirectStandardInput = true,
                 }
             };
-            
             process.EnableRaisingEvents = true;
-            
-            process.OutputDataReceived += async (_, args) =>
-            {
-                var log = await _minecraftLogAnalyzer.Analyze(args.Data);
-                if (log.Type is MinecraftLogType.Fatal or MinecraftLogType.Error)
-                {
-                    minecraftCrashLogs.Add(log);
-                }
-            };
-            
-            process.Exited += (_, args) =>
-            {
-                var crashes = _minecraftCrashAnalyzer.Analyze(minecraftCrashLogs);
-                
-            };
-            
-            return  new MinecraftProcessStart(process);
+            return  new MinecraftProcess(process);
         }
     }
 }

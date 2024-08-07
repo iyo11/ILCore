@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Resources>
+    <Resource Key="Test">测试</Resource>
+    <Resource Key="Test1">测试{0}-{1}</Resource>
+    <Resource Key="ForgeMissingMods">模组{0}需求前置模组{1}</Resource>
+    <Resource Key="ClassNotFoundException">未找到类:{0} > 错误的Java或模组版本</Resource>
+</Resources>
