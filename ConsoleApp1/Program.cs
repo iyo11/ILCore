@@ -17,8 +17,8 @@ using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
 using ILCore.Util;
 
-const string javaPath = @"C:\Program Files\Java\jdk1.8.0_202\jre\bin\javaw.exe";
-//const string javaPath = @"C:\Users\IYO\AppData\Roaming\.minecraft\runtime\java-runtime-delta\bin\java.exe";
+//const string javaPath = @"C:\Program Files\Java\jdk1.8.0_202\jre\bin\javaw.exe";
+const string javaPath = @"C:\Program Files\Java\jdk-11\bin\javaw.exe";
 const string minecraftPath = @"G:\Minecraft\.minecraft";
 //Fail
 
@@ -64,14 +64,14 @@ var minecraftProcess = new MinecraftProcessBuilder().BuildProcess(javaPath,launc
 
 minecraftProcess.MinecraftLogOutPut += (sender, minecraftLog) =>
 {
-    Console.WriteLine(minecraftLog.Message);
+    //Console.WriteLine(minecraftLog.ToString());
 };
 
-minecraftProcess.MinecraftLogCrash += (sender, errors) =>
+minecraftProcess.MinecraftLogCrash += (sender, errors) => 
 {
     foreach (var log in errors)
     {
-        //Console.WriteLine(log);
+        Console.WriteLine(log);
     }
 };
 

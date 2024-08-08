@@ -27,14 +27,22 @@ public class MinecraftCrashAnalyzer
         return logs[0] switch
         {
             "net.minecraftforge.fml.common.MissingModsException" => Language.GetValue("ForgeMissingMods",
-                Regexs.RoundBrackets().Match(logs[1]).Groups[0].Value,
-                Regexs.SquareBrackets().Match(logs[1]).Groups[0].Value),
+                Regexes.RoundBrackets().Match(logs[1]).Groups[0].Value,
+                Regexes.SquareBrackets().Match(logs[1]).Groups[0].Value),
+            
             _ => null
         };
     }
 
     private string FuzzyAnalyze(string minecraftLog)
     {
-        return minecraftLog.Contains("java.lang.ClassNotFoundException:") ? Language.GetValue("ClassNotFoundException",minecraftLog.Split(":")[1]) : null;
+        return minecraftLog switch
+        {
+            not null when minecraftLog.Contains("java.lang.ClassNotFoundException:") => Language.GetValue(
+                "ClassNotFoundException", minecraftLog.Split(':')[1]),
+            not null when minecraftLog.Contains("java.lang.ClassCastException: class jdk.") => Language.GetValue(
+                "ClassCastException"),
+            _ => null
+        };
     }
 }

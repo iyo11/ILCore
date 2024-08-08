@@ -23,14 +23,17 @@ namespace ILCore.Launch
             
             process.OutputDataReceived += async (s,args) =>
             {
-                var log = await _minecraftLogAnalyzer.Analyze(args.Data);
+                var log = _minecraftLogAnalyzer.Analyze(args.Data);
                 if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
                     minecraftCrashLogs.Add(log);
-                MinecraftLogOutPut?.Invoke(s,log);
+                if (!string.IsNullOrEmpty(log.Message))
+                {
+                    MinecraftLogOutPut?.Invoke(s,log);
+                }
             };
             process.ErrorDataReceived += async (s,args) =>
             {
-                var log = await _minecraftLogAnalyzer.Analyze(args.Data);
+                var log = _minecraftLogAnalyzer.Analyze(args.Data);
                 if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
                     minecraftCrashLogs.Add(log);
                 MinecraftLogOutPut?.Invoke(s,log);
@@ -38,11 +41,11 @@ namespace ILCore.Launch
             
             process.Exited += (s,args) =>
             {
-                foreach (var minecraftCrashLog in minecraftCrashLogs)
-                {
-                    Console.WriteLine(minecraftCrashLog.ToString());
-                }
-                var crash = _minecraftCrashAnalyzer.Analyze(minecraftCrashLogs);
+                var crash = _minecraftCrashAnalyzer.Analyze(minecraftCrashLogs)
+                    .Where(item => !string.IsNullOrEmpty(item))
+                    .GroupBy(item => item)
+                    .SelectMany(group => group.Take(1));
+
                 MinecraftLogCrash?.Invoke(s,crash);
             };
         }

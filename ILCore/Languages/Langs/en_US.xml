@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Resources>
-    <Resource Key="Test">Test</Resource>
-    <Resource Key="Test1">Test{0}-{1}</Resource>
     <Resource Key="ForgeMissingMods">Mod{0}requires{1}</Resource>
     <Resource Key="ClassNotFoundException">ClassNotFound:{0} > Wrong Java or Mod version</Resource>
+    <Resource Key="ClassCastException">The JDK or Java version used is too high</Resource>
 </Resources>

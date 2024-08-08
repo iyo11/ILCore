@@ -11,14 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="OAuth\MinecraftOAuth\LegacyUserProfile.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Languages\AvailableLanguages.xml" />
-    <None Remove="Languages\Langs\En-Us.xml" />
     <None Remove="Languages\Langs\en_US.xml" />
-    <None Remove="Languages\Langs\Zh-Cn.xml" />
     <None Remove="Languages\Langs\zh_CN.xml" />
   </ItemGroup>
 
