@@ -19,7 +19,7 @@ public class MinecraftLogAnalyzer
         var match = LogPattern.Match(log);
         if (!match.Success)
         {
-            if (log.Contains("Exception"))
+            if (log.Contains("Exception") || log.Contains("Error"))
             {
                 return new MinecraftLog
                 {

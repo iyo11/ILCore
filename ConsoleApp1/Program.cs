@@ -18,7 +18,7 @@ using ILCore.OAuth.RedirectUri;
 using ILCore.Util;
 
 const string javaPath = @"C:\Program Files\Java\jdk1.8.0_202\jre\bin\javaw.exe";
-//const string javaPath = @"C:\Program Files\Java\jdk-11\bin\javaw.exe";
+//const string javaPath = @"C:\Users\IYO\AppData\Roaming\.minecraft\runtime\java-runtime-delta\bin\javaw.exe";
 const string minecraftPath = @"G:\Minecraft\.minecraft";
 //Fail
 
@@ -28,7 +28,7 @@ const string minecraftPath = @"G:\Minecraft\.minecraft";
 const string versionName = "1.12.2-Forge_14.23.5.2859";
 
 
-const string maxMemory = "4096";
+const string maxMemory = "2048";
 const string jvmArgs = " -XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true";
 
 const string clientId = "288ec5dd-6736-4d4b-9b96-30e083a8cad2";
@@ -54,8 +54,8 @@ var info = new LaunchInfo
     LauncherVersion = "001",
     CustomArgs = "ILCore",
     Fullscreen = false,
-    WindowWidth = 1280,
-    WindowHeight = 760
+    WindowWidth = 1600,
+    WindowHeight = 960
 };
 var launchArg = await launchArgs.PrepareArguments(info);
 
@@ -64,7 +64,7 @@ var minecraftProcess = new MinecraftProcessBuilder().BuildProcess(javaPath,launc
 
 minecraftProcess.MinecraftLogOutPut += (sender, minecraftLog) =>
 {
-    //Console.WriteLine(minecraftLog.ToString());
+    Console.WriteLine(minecraftLog.ToString());
 };
 
 minecraftProcess.MinecraftLogCrash += (sender, errors) => 
@@ -73,6 +73,11 @@ minecraftProcess.MinecraftLogCrash += (sender, errors) =>
     {
         Console.WriteLine(log);
     }
+};
+
+minecraftProcess.MinecraftLaunchSuccess += (s, e) =>
+{
+    Console.WriteLine($"启动成功{e.Message}");
 };
 
 await minecraftProcess.Start();

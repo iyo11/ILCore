@@ -16,7 +16,7 @@ public class LegacyUserProfile : UserProfile
     public LegacyUserProfile()
     {
         UserType = UserType.legacy;
-        Id = "{}";
+        Id = "ffffffffffffffffffffffffffffffff";
         RefreshToken = "{}";
         AccessToken = "{}";
     }

@@ -11,7 +11,9 @@ namespace ILCore.Launch
     public class MinecraftProcess : IProcessStart
     {
         public event EventHandler<MinecraftLog> MinecraftLogOutPut;
+        public event EventHandler<MinecraftLog> MinecraftLaunchSuccess;
         public event EventHandler<IEnumerable<string>> MinecraftLogCrash;
+
         public Process Process { get; set; }
         private readonly MinecraftLogAnalyzer _minecraftLogAnalyzer = new();
         private readonly MinecraftCrashAnalyzer _minecraftCrashAnalyzer = new();
@@ -19,6 +21,7 @@ namespace ILCore.Launch
         public MinecraftProcess(Process process)
         {
             Process = process;
+            var isLaunched = false;
             List<MinecraftLog> minecraftCrashLogs = [];
             
             process.OutputDataReceived += (s,args) =>
@@ -26,10 +29,12 @@ namespace ILCore.Launch
                 var log = _minecraftLogAnalyzer.Analyze(args.Data);
                 if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
                     minecraftCrashLogs.Add(log);
-                if (!string.IsNullOrEmpty(log.Message))
-                {
-                    MinecraftLogOutPut?.Invoke(s,log);
-                }
+                if (string.IsNullOrEmpty(log.Message)) return;
+                MinecraftLogOutPut?.Invoke(s,log);
+                if (isLaunched) return;
+                if (!log.Message.Contains("Setting user:")) return;
+                MinecraftLaunchSuccess?.Invoke(s,log);
+                isLaunched = true;
             };
             process.ErrorDataReceived += (s,args) =>
             {

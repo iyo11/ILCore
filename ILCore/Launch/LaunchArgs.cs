@@ -115,6 +115,8 @@ namespace ILCore.Launch
             
             var arguments = argumentsBuilder.ToString();
 
+            await File.WriteAllTextAsync("1.txt",arguments);
+            
             return arguments;
         }
 

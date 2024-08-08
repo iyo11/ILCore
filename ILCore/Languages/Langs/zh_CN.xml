@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Resources>
+
+
+
+    <!-- CrashAnalyzers -->
     <Resource Key="ForgeMissingMods">模组{0}需求前置模组{1}</Resource>
     <Resource Key="ClassNotFoundException">未找到类:{0} > 错误的Java或模组版本</Resource>
     <Resource Key="ClassCastException">使用了JDK或Java版本过高</Resource>
-    
+    <Resource Key="RegisteringTexture">在注册纹理时出现了问题</Resource>
+    <Resource Key="OutOfMemoryError">内存溢出</Resource>
 </Resources>
