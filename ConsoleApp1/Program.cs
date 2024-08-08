@@ -17,8 +17,8 @@ using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
 using ILCore.Util;
 
-//const string javaPath = @"C:\Program Files\Java\jdk1.8.0_202\jre\bin\javaw.exe";
-const string javaPath = @"C:\Program Files\Java\jdk-11\bin\javaw.exe";
+const string javaPath = @"C:\Program Files\Java\jdk1.8.0_202\jre\bin\javaw.exe";
+//const string javaPath = @"C:\Program Files\Java\jdk-11\bin\javaw.exe";
 const string minecraftPath = @"G:\Minecraft\.minecraft";
 //Fail
 
@@ -35,7 +35,7 @@ const string clientId = "288ec5dd-6736-4d4b-9b96-30e083a8cad2";
 const string redirectUri = "http://localhost:29116/authentication-response";
 const string scope = "XboxLive.signin offline_access";
 
-var minecraftOAuth2 = new MicrosoftOAuth2(clientId:clientId,redirectUri:redirectUri,new RedirectMessage());
+var minecraftOAuth2 = new MicrosoftOAuth2(clientId:clientId,uri:redirectUri,new RedirectMessage());
 //var userProfile = await minecraftOAuth2.AuthorizeAsync();
 
 var userProfile = new LegacyUserProfile { Name = "IYO" };

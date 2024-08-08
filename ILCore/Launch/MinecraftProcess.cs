@@ -21,7 +21,7 @@ namespace ILCore.Launch
             Process = process;
             List<MinecraftLog> minecraftCrashLogs = [];
             
-            process.OutputDataReceived += async (s,args) =>
+            process.OutputDataReceived += (s,args) =>
             {
                 var log = _minecraftLogAnalyzer.Analyze(args.Data);
                 if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
@@ -31,7 +31,7 @@ namespace ILCore.Launch
                     MinecraftLogOutPut?.Invoke(s,log);
                 }
             };
-            process.ErrorDataReceived += async (s,args) =>
+            process.ErrorDataReceived += (s,args) =>
             {
                 var log = _minecraftLogAnalyzer.Analyze(args.Data);
                 if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
@@ -39,7 +39,7 @@ namespace ILCore.Launch
                 MinecraftLogOutPut?.Invoke(s,log);
             };
             
-            process.Exited += (s,args) =>
+            process.Exited += (s,_) =>
             {
                 var crash = _minecraftCrashAnalyzer.Analyze(minecraftCrashLogs)
                     .Where(item => !string.IsNullOrEmpty(item))

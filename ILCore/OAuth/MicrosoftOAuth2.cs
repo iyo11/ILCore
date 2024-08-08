@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Net;
-using ILCore.Launch;
 using ILCore.OAuth.MicrosoftOAuth;
 using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
@@ -10,22 +9,12 @@ using Newtonsoft.Json;
 
 namespace ILCore.OAuth;
 
-public class MicrosoftOAuth2
+public class MicrosoftOAuth2(
+    string clientId,
+    string uri,
+    RedirectMessage redirectMessage,
+    string scope = "XboxLive.signin offline_access")
 {
-    private readonly string _clientId;
-    private readonly string _redirectUri;
-    private readonly string _scope;
-    private readonly RedirectMessage _redirectMessage;
-    
-    public MicrosoftOAuth2(string clientId, string redirectUri,RedirectMessage redirectMessage, string scope = "XboxLive.signin offline_access")
-    {
-        _clientId = clientId;
-        _redirectUri = redirectUri;
-        _scope = scope;
-        _redirectMessage = redirectMessage;
-    }
-
-
     /*
     public async Task<UserProfile> RefreshAsync(string refreshToken)
     {
@@ -43,18 +32,18 @@ public class MicrosoftOAuth2
             return null;
         }
 
-        if (_redirectUri == null)
-            throw new ArgumentException("Prefixes cannot be null or empty.", nameof(_redirectUri));
+        if (uri == null)
+            throw new ArgumentException("Prefixes cannot be null or empty.", nameof(uri));
 
-        var redirectUri = _redirectUri + "/";
+        var redirectUri = uri + "/";
         
         var authUri = NetWorkClient.BuildUrl("https://login.live.com/oauth20_authorize.srf",
             new SortedDictionary<string, string>
             {
-                { "client_id", _clientId },
+                { "client_id", clientId },
                 { "response_type", "code" },
-                { "redirect_uri", _redirectUri },
-                { "scope", _scope }
+                { "redirect_uri", uri },
+                { "scope", scope }
             });
         
         new Process
@@ -86,7 +75,7 @@ public class MicrosoftOAuth2
                 var xboxAuth = new XboxAuth();
                 var minecraftAuth = new MinecraftAuth();
                 
-                var microsoftAuthToken = await microsoftAuth.MicrosoftAuthAsync(code,_clientId,_redirectUri,_scope);
+                var microsoftAuthToken = await microsoftAuth.MicrosoftAuthAsync(code,clientId,uri,scope);
 
                 var xboxAuthToken = await xboxAuth.XboxAuthAsync(microsoftAuthToken.AccessToken);
                 
@@ -99,7 +88,7 @@ public class MicrosoftOAuth2
                 userProfile = JsonConvert.DeserializeObject<MsaUserProfile>(profile.ToString());
                 userProfile.RefreshToken = microsoftAuthToken.RefreshToken;
                 userProfile.AccessToken = minecraftToken;
-                buffer = new RedirectPage(_redirectMessage,AuthStatus.Success).ToPageBuffers();
+                buffer = new RedirectPage(redirectMessage,AuthStatus.Success).ToPageBuffers();
             }
             else
             {
@@ -112,8 +101,8 @@ public class MicrosoftOAuth2
         }
         catch (Exception e)
         {
-            _redirectMessage.ContentError = e.ToString();
-            buffer = new RedirectPage(_redirectMessage,AuthStatus.Error).ToPageBuffers();
+            redirectMessage.ContentError = e.ToString();
+            buffer = new RedirectPage(redirectMessage,AuthStatus.Error).ToPageBuffers();
             if (context != null)
             {
                 var response = context.Response;

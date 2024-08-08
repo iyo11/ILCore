@@ -2,7 +2,7 @@
 
 ### Launch
 - [Feat] > Launch inherit version
-- [Feat] > Crash analyzer
+- ~~[Feat] > Crash analyzer~~
 - [Improvement] > Crash analyzer
 - [Feat] > Library & Assets check
 - [Feat] > Window title 

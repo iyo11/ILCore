@@ -4,32 +4,18 @@ using ILCore.Launch;
 
 namespace ILCore.Minecraft.Arguments
 {
-    public class MinecraftArguments
+    public class MinecraftArguments(
+        string userName,
+        string versionName,
+        string gameDir,
+        string assetsDir,
+        string assetsIndex,
+        string uuid,
+        string accessToken,
+        UserType userType,
+        string userProperties,
+        string versionType)
     {
-        private readonly string _userName;
-        private readonly string _versionName;
-        private readonly string _gameDir;
-        private readonly string _assetsDir;
-        private readonly string _assetsIndex;
-        private readonly string _uuid;
-        private readonly string _accessToken;
-        private readonly UserType _userType;
-        private readonly string _userProperties;
-        private readonly string _versionType;
-        public MinecraftArguments(string userName, string versionName, string gameDir, string assetsDir, string assetsIndex, string uuid, string accessToken, UserType userType, string userProperties, string versionType)
-        {
-            _userName = userName;
-            _versionName = versionName;
-            _gameDir = gameDir;
-            _assetsDir = assetsDir;
-            _assetsIndex = assetsIndex;
-            _uuid = uuid;
-            _accessToken = accessToken;
-            _userType = userType;
-            _userProperties = userProperties;
-            _versionType = versionType;
-        }
-
         public string ToMinecraftArguments(JObject versionObj)
         {
             var gameArguments = "";
@@ -55,17 +41,17 @@ namespace ILCore.Minecraft.Arguments
             {
                 argumentsStrings[i + 1] = argumentsStrings[i + 1] switch
                 {
-                    "${auth_player_name}" => _userName,
-                    "${version_name}" => _versionName,
-                    "${game_directory}" => _gameDir,
-                    "${game_assets}" => _assetsDir,
-                    "${assets_root}" => _assetsDir,
-                    "${assets_index_name}" => _assetsIndex,
-                    "${auth_uuid}" => _uuid,
-                    "${auth_access_token}" => _accessToken,
-                    "${user_type}" => _userType.ToString(),
-                    "${user_properties}" => _userProperties,
-                    "${version_type}" => _versionType,
+                    "${auth_player_name}" => userName,
+                    "${version_name}" => versionName,
+                    "${game_directory}" => gameDir,
+                    "${game_assets}" => assetsDir,
+                    "${assets_root}" => assetsDir,
+                    "${assets_index_name}" => assetsIndex,
+                    "${auth_uuid}" => uuid,
+                    "${auth_access_token}" => accessToken,
+                    "${user_type}" => userType.ToString(),
+                    "${user_properties}" => userProperties,
+                    "${version_type}" => versionType,
                     _ => argumentsStrings[i + 1]
                 };
             }
