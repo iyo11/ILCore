@@ -6,7 +6,7 @@
 - [Improvement] > Crash analyzer
 - [Feat] > Library & Assets check
 - [Feat] > Window title 
-- [Feat] > Auto set Minecraft language
+- ~~[Feat] > Auto set Minecraft language~~
 - ~~[Feat] > Auto into server & Full screen~~
 
 ### OAuth

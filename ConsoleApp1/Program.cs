@@ -12,6 +12,7 @@ Console.WriteLine(userProfile.MinecraftToken);
 using ILCore.Languages;
 using ILCore.Launch;
 using ILCore.Minecraft.Libraries;
+using ILCore.Minecraft.Options;
 using ILCore.OAuth;
 using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
@@ -25,7 +26,7 @@ const string minecraftPath = @"G:\Minecraft\.minecraft";
 
 //Success
 
-const string versionName = "1.12.2-Forge_14.23.5.2859";
+const string versionName = "1.12.2";
 
 
 const string maxMemory = "2048";
@@ -60,11 +61,16 @@ var info = new LaunchInfo
 var launchArg = await launchArgs.PrepareArguments(info);
 
 await new Natives().Extract(minecraftPath, versionName);
+await new Options().SetOptions(minecraftPath, versionName, new Dictionary<string, string>()
+{
+    {"lang","zh_CN"}
+});
+
 var minecraftProcess = new MinecraftProcessBuilder().BuildProcess(javaPath,launchArg);
 
 minecraftProcess.MinecraftLogOutPut += (sender, minecraftLog) =>
 {
-    Console.WriteLine(minecraftLog.ToString());
+    //Console.WriteLine(minecraftLog.ToString());
 };
 
 minecraftProcess.MinecraftLogCrash += (sender, errors) => 
@@ -75,9 +81,9 @@ minecraftProcess.MinecraftLogCrash += (sender, errors) =>
     }
 };
 
-minecraftProcess.MinecraftLaunchSuccess += (s, e) =>
+minecraftProcess.MinecraftLaunchSuccess += async (s, e) =>
 {
-    Console.WriteLine($"启动成功{e.Message}");
+    Console.WriteLine($"启动成功 > {e.Message}");
 };
 
 await minecraftProcess.Start();

@@ -3,12 +3,12 @@
 namespace ILCore.Util;
 public static class Compress
 {
-    public static async Task ExtractJarAsync(string sourceJarPath, string targetDirectory, string[] excludePatterns)
+    public static async Task ExtractAsync(string sourceJarPath, string targetDirectory, string[] excludePatterns, string[] suffixesPatterns)
     {
 
         if (!File.Exists(sourceJarPath))
         {
-            throw new FileNotFoundException("The specified JAR file does not exist.", sourceJarPath);
+            throw new FileNotFoundException("The file does not exist.", sourceJarPath);
         }
 
         if (!Directory.Exists(targetDirectory))
@@ -20,13 +20,17 @@ public static class Compress
         {
             await using var fileStream = File.OpenRead(sourceJarPath);
             using var archive = new ZipArchive(fileStream, ZipArchiveMode.Read);
-            foreach (var entry in archive.Entries)
+
+            excludePatterns ??= ["META-INF"];
+            
+            var files =
+                archive.Entries
+                    .Where(file => suffixesPatterns.Where(s => s != null).Any(suffix => Path.GetExtension(file.FullName).Equals(suffix, StringComparison.OrdinalIgnoreCase)))
+                    .Where(file => !excludePatterns.Any(pattern => file.FullName.Contains(pattern)));
+            foreach (var file in files)
             {
-                if (excludePatterns.Any(p => entry.FullName.Contains(p)))
-                    continue;
-                var targetPath = Path.Combine(targetDirectory, entry.FullName);
-                
-                entry.ExtractToFile(targetPath, true);
+                var targetPath = Path.Combine(targetDirectory, file.FullName);
+                file.ExtractToFile(targetPath, true);
             }
         });
     }

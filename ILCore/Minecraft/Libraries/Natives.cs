@@ -7,7 +7,6 @@ public class Natives
     public async Task Extract(string minecraftPath,string versionName)
     {
         var libraries = await new Libraries().GetLibraries(minecraftPath,versionName);
-        
         var nativesFolder = $@"{minecraftPath}\versions\{versionName}\natives";
         
         //取高版本Libs
@@ -33,12 +32,12 @@ public class Natives
         {
             try
             {
-                await Compress.ExtractJarAsync($@"{minecraftPath}\libraries\{nativeLibrary.Path}", nativesFolder,
-                    nativeLibrary.Exclude);
+                await Compress.ExtractAsync($@"{minecraftPath}\libraries\{nativeLibrary.Path}", nativesFolder,
+                    nativeLibrary.Exclude,[".dll"]);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e);
             }
         }
     }
