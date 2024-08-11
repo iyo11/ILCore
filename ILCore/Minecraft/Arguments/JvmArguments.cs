@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace ILCore.Minecraft.Arguments
 {
-    public class LaunchArguments
+    public class JvmArguments
     {
         public string ToLaunchArguments(JObject versionObj)
         {

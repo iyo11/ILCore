@@ -12,25 +12,10 @@ public class MinecraftLog
     public override string ToString()
     {
         var builder = new StringBuilder();
-        if (!string.IsNullOrEmpty(Time))
-        {
-            builder.Append(Time);
-            builder.Append(" > ");
-        }
-
-        if (Type != MinecraftLogType.Unknown)
-        {
-            builder.Append(Type);
-            builder.Append(" > ");
-        }
-
-        if (!string.IsNullOrEmpty(LogSource))
-        {
-            builder.Append(LogSource);
-            builder.Append(" > ");
-        }
+        builder.Append(string.IsNullOrEmpty(Time) ? "" : $"{Time} > ");
+        builder.Append(string.IsNullOrEmpty(LogSource) ? "" : $"{LogSource} > ");
+        builder.Append(Type != MinecraftLogType.Unknown ? $"{Type} > " : "");
         builder.Append(Message);
-        
         return  builder.ToString();
     }
 }

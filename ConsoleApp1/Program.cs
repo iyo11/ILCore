@@ -9,7 +9,7 @@ Console.WriteLine(userProfile.MinecraftToken);
 */
 
 
-using ILCore.Languages;
+using ILCore.Analyzer.Minecraft;using ILCore.Languages;
 using ILCore.Launch;
 using ILCore.Minecraft.Libraries;
 using ILCore.Minecraft.Options;
@@ -26,7 +26,7 @@ const string minecraftPath = @"G:\Minecraft\.minecraft";
 
 //Success
 
-const string versionName = "1.12.2";
+const string versionName = "1.20.2";
 
 
 const string maxMemory = "2048";
@@ -36,10 +36,15 @@ const string clientId = "288ec5dd-6736-4d4b-9b96-30e083a8cad2";
 const string redirectUri = "http://localhost:29116/authentication-response";
 const string scope = "XboxLive.signin offline_access";
 
-var minecraftOAuth2 = new MicrosoftOAuth2(clientId:clientId,uri:redirectUri,new RedirectMessage());
+var minecraftOAuth2 = new MicrosoftOAuth2(clientId:clientId,uri:redirectUri,new RedirectMessage
+{
+   TitleSuccess = Language.GetValue("Success"),
+   ContentSuccess = Language.GetValue("Success")
+   //...
+});
 //var userProfile = await minecraftOAuth2.AuthorizeAsync();
 
-var userProfile = new LegacyUserProfile { Name = "IYO" };
+var userProfile = new LegacyUserProfile("IYO");
 
 
 LaunchArgs launchArgs = new();
@@ -58,22 +63,23 @@ var info = new LaunchInfo
     WindowWidth = 1600,
     WindowHeight = 960
 };
+
 var launchArg = await launchArgs.PrepareArguments(info);
 
 await new Natives().Extract(minecraftPath, versionName);
 await new Options().SetOptions(minecraftPath, versionName, new Dictionary<string, string>()
 {
-    {"lang","zh_CN"}
+    {"lang","zh_cn"}
 });
 
 var minecraftProcess = new MinecraftProcessBuilder().BuildProcess(javaPath,launchArg);
 
-minecraftProcess.MinecraftLogOutPut += (sender, minecraftLog) =>
+minecraftProcess.MinecraftLogOutPut += (minecraftLog) =>
 {
-    //Console.WriteLine(minecraftLog.ToString());
+    Console.WriteLine(minecraftLog.ToString());
 };
 
-minecraftProcess.MinecraftLogCrash += (sender, errors) => 
+minecraftProcess.MinecraftLogCrash += (errors) => 
 {
     foreach (var log in errors)
     {
@@ -81,9 +87,14 @@ minecraftProcess.MinecraftLogCrash += (sender, errors) =>
     }
 };
 
-minecraftProcess.MinecraftLaunchSuccess += async (s, e) =>
+minecraftProcess.MinecraftLaunchSuccess += () =>
 {
-    Console.WriteLine($"启动成功 > {e.Message}");
+    Console.WriteLine("启动成功");
+};
+
+minecraftProcess.MinecraftLaunchFailed += () =>
+{
+    Console.WriteLine("启动失败");
 };
 
 await minecraftProcess.Start();

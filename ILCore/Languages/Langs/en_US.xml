@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Resources>
+    <!-- OAuth -->
+    <Resource Key="Success">Success</Resource>
+    <Resource Key="Failed">Failed</Resource>
     
+    <!-- Launcher -->
+    <Resource Key="JsonNotFound">JsonNotFound</Resource>
     
     <!-- CrashAnalyzers -->
     <Resource Key="ForgeMissingMods">Mod{0}requires{1}</Resource>

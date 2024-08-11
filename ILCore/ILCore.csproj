@@ -18,6 +18,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Languages\Langs\en_US.xml" />
     <EmbeddedResource Include="Languages\Langs\zh_CN.xml" />
+    <None Remove="OAuth\RedirectUri\RedirectPage.html" />
+    <EmbeddedResource Include="OAuth\RedirectUri\RedirectPage.html" />
   </ItemGroup>
 
 </Project>

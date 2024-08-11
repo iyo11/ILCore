@@ -9,7 +9,9 @@ public class Libraries
     public async Task<IEnumerable<Library>> GetLibraries(string minecraftPath,string versionName)
     {
         var versionPath = $@"{minecraftPath}\versions\{versionName}";
-        var json = await File.ReadAllTextAsync($@"{versionPath}\{versionName}.json");
+        var jsonPath = $@"{versionPath}\{versionName}.json";
+        if (!File.Exists(jsonPath)) return null;
+        var json = await File.ReadAllTextAsync(jsonPath);
         var jLibrariesToken = JToken.Parse(json).SelectToken("libraries");
         return ToLibraries(jLibrariesToken);
     }

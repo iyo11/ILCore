@@ -9,7 +9,7 @@ public class LaunchInfo
     public string MinecraftPath { get; set; }
     public string MaxMemory { get; set; }
     public string JvmArgs { get; set; }
-    public UserProfile UserProfile { get; set; }
+    public IUserProfile UserProfile { get; set; }
     public string LauncherName { get; set; }
     public string LauncherVersion { get; set; }
     public string CustomArgs { get; set; }

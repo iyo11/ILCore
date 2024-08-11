@@ -2,6 +2,8 @@
 using ILCore.Minecraft.Libraries;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using ILCore.Exceptions;
+using ILCore.Util;
 
 
 namespace ILCore.Launch
@@ -13,7 +15,9 @@ namespace ILCore.Launch
             var versionPath = $@"{launchInfo.MinecraftPath}\versions\{launchInfo.VersionName}";
             var jvmMemoryArgs =
                 $"-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump -Xmn921m -Xmx{launchInfo.MaxMemory}m";
-            var json = await File.ReadAllTextAsync($@"{versionPath}\{launchInfo.VersionName}.json");
+            var jsonPath = $@"{versionPath}\{launchInfo.VersionName}.json";
+            if(!File.Exists(jsonPath)) throw new IlCoreException(Language.GetValue("JsonNotFound"));
+            var json = await File.ReadAllTextAsync(jsonPath);
 
             var versionObj = JObject.Parse(json);
             var librariesObj = versionObj["libraries"];
@@ -73,7 +77,7 @@ namespace ILCore.Launch
 
             if (versionObj["arguments"] is not null)
             {
-                var launchArgument = new LaunchArguments();
+                var launchArgument = new JvmArguments();
 
                 var launchArguments = launchArgument.ToLaunchArguments(versionObj);
                 launchArguments = launchArguments?

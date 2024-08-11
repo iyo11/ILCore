@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Resources>
-
+    <!-- OAuth -->
+    <Resource Key="Success">成功</Resource>
+    <Resource Key="Failed">失败</Resource>
+    
+    <!-- Launcher -->
+    <Resource Key="JsonNotFound">Json文件未找到</Resource>
 
 
     <!-- CrashAnalyzers -->

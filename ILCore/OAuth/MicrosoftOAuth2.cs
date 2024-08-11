@@ -22,7 +22,7 @@ public class MicrosoftOAuth2(
     }
     */
     
-    public async Task<UserProfile> AuthorizeAsync()
+    public async Task<IUserProfile> AuthorizeAsync()
     {
         var userProfile = new MsaUserProfile();
         

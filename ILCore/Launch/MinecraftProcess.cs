@@ -10,38 +10,41 @@ namespace ILCore.Launch
 
     public class MinecraftProcess : IProcessStart
     {
-        public event EventHandler<MinecraftLog> MinecraftLogOutPut;
-        public event EventHandler<MinecraftLog> MinecraftLaunchSuccess;
-        public event EventHandler<IEnumerable<string>> MinecraftLogCrash;
+        public event Action<MinecraftLog> MinecraftLogOutPut;
+        public event Action MinecraftLaunchSuccess;
+        public event  Action MinecraftLaunchFailed;
+        public event Action<IEnumerable<string>> MinecraftLogCrash;
 
         public Process Process { get; set; }
         private readonly MinecraftLogAnalyzer _minecraftLogAnalyzer = new();
         private readonly MinecraftCrashAnalyzer _minecraftCrashAnalyzer = new();
+
         
         public MinecraftProcess(Process process)
         {
             Process = process;
-            var isLaunched = false;
+            var isLaunched = false; 
             List<MinecraftLog> minecraftCrashLogs = [];
             
             process.OutputDataReceived += (s,args) =>
             {
                 var log = _minecraftLogAnalyzer.Analyze(args.Data);
+                if (string.IsNullOrEmpty(log.Message)) return;
                 if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
                     minecraftCrashLogs.Add(log);
-                if (string.IsNullOrEmpty(log.Message)) return;
-                MinecraftLogOutPut?.Invoke(s,log);
+                MinecraftLogOutPut?.Invoke(log);
                 if (isLaunched) return;
                 if (!log.Message.Contains("Setting user:")) return;
-                MinecraftLaunchSuccess?.Invoke(s,log);
+                MinecraftLaunchSuccess?.Invoke();
                 isLaunched = true;
             };
             process.ErrorDataReceived += (s,args) =>
             {
                 var log = _minecraftLogAnalyzer.Analyze(args.Data);
+                if (string.IsNullOrEmpty(log.Message)) return;
                 if (log.Type is MinecraftLogType.Error or MinecraftLogType.Fatal)
                     minecraftCrashLogs.Add(log);
-                MinecraftLogOutPut?.Invoke(s,log);
+                MinecraftLogOutPut?.Invoke(log);
             };
             
             process.Exited += (s,_) =>
@@ -49,9 +52,11 @@ namespace ILCore.Launch
                 var crash = _minecraftCrashAnalyzer.Analyze(minecraftCrashLogs)
                     .Where(item => !string.IsNullOrEmpty(item))
                     .GroupBy(item => item)
-                    .SelectMany(group => group.Take(1));
-
-                MinecraftLogCrash?.Invoke(s,crash);
+                    .SelectMany(group => group.Take(1)).ToList();
+                if (!isLaunched)
+                    MinecraftLaunchFailed?.Invoke();
+                if (crash.Count != 0)
+                    MinecraftLogCrash?.Invoke(crash);
             };
         }
         

@@ -3,7 +3,7 @@
 ### Launch
 - [Feat] > Launch inherit version
 - ~~[Feat] > Crash analyzer~~
-- [Improvement] > Crash analyzer
+- [Fix] > Crash analyzer
 - [Feat] > Library & Assets check
 - [Feat] > Window title 
 - ~~[Feat] > Auto set Minecraft language~~
@@ -12,3 +12,4 @@
 ### OAuth
 - [Feat] > MicrosoftOAuth2 expiresOn
 - [Feat] > Check Minecraft ownership status
+- [Feat] > External authentication [] []

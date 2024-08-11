@@ -8,6 +8,8 @@ public class Natives
     {
         var libraries = await new Libraries().GetLibraries(minecraftPath,versionName);
         var nativesFolder = $@"{minecraftPath}\versions\{versionName}\natives";
+
+        if (libraries is null) return;
         
         //取高版本Libs
         var nativeLibraries = libraries

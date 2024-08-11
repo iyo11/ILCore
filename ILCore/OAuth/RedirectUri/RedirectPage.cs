@@ -1,36 +1,39 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 
 namespace ILCore.OAuth.RedirectUri;
 
 public class RedirectPage(RedirectMessage redirectMessage, AuthStatus authStatus)
 {
+    private const string RedirectPageNamespace = "ILCore.OAuth.RedirectUri";
     public byte[] ToPageBuffers()
-    {
-        var html = "<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333;background-color:#f7f7f7;margin:50px auto;padding:0}.message-container{width:100%;max-width:600px;margin:0 auto;background-color:#fff;border-radius:5px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}h1,h2{font-weight:normal;color:#fff;text-align:center}p{margin:0 0 15px}.highlight{color:#007bff;font-weight:bold}.header{border-radius:5px;background-color:${Color}}.content{padding:15px}</style><title>OAuth2</title></head><body><div class=\"message-container\"><div class=\"header\"><h2>${Header}</h2></div><div class=\"content\"><p>${Body}</p></div></div></body></html>";
+    { 
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{RedirectPageNamespace}.RedirectPage.html");
+        if (stream == null) return null;
+        using var reader = new StreamReader(stream);
+        var htmlContent = reader.ReadToEnd();
+        
         byte[] buffer;
         switch (authStatus)
         {
             case AuthStatus.Success:
-                html = html
+                htmlContent = htmlContent
                     .Replace("${Header}", redirectMessage.TitleSuccess)
-                    .Replace("${Body}", redirectMessage.ContentSuccess)
-                    .Replace("${Color}", "#28a745");
-                buffer = Encoding.UTF8.GetBytes(html);
+                    .Replace("${Body}", redirectMessage.ContentSuccess);
+                buffer = Encoding.UTF8.GetBytes(htmlContent);
                 break;
             case AuthStatus.Error:
-                html = html
+                htmlContent = htmlContent
                     .Replace("${Header}", redirectMessage.TitleError)
-                    .Replace("${Body}", redirectMessage.ContentError)
-                    .Replace("${Color}", "#dc3545");
-                buffer = Encoding.UTF8.GetBytes(html);
+                    .Replace("${Body}", redirectMessage.ContentError);
+                buffer = Encoding.UTF8.GetBytes(htmlContent);
                 break;
             case AuthStatus.Interrupt:
                 default:
-                html = html
-                    .Replace("${Header}", redirectMessage.TitleInterrupt)
-                    .Replace("${Body}", redirectMessage.ContentInterrupt)
-                    .Replace("${Color}", "#ffc107");
-                buffer = Encoding.UTF8.GetBytes(html);
+                    htmlContent = htmlContent
+                        .Replace("${Header}", redirectMessage.TitleInterrupt)
+                        .Replace("${Body}", redirectMessage.ContentInterrupt);
+                buffer = Encoding.UTF8.GetBytes(htmlContent);
                 break;
         }
 
