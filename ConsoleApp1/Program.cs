@@ -26,7 +26,7 @@ const string minecraftPath = @"G:\Minecraft\.minecraft";
 
 //Success
 
-const string versionName = "1.20.2";
+const string versionName = "1.16.5";
 
 
 const string maxMemory = "2048";
@@ -42,9 +42,9 @@ var minecraftOAuth2 = new MicrosoftOAuth2(clientId:clientId,uri:redirectUri,new 
    ContentSuccess = Language.GetValue("Success")
    //...
 });
-//var userProfile = await minecraftOAuth2.AuthorizeAsync();
+var userProfile = await minecraftOAuth2.AuthorizeAsync();
 
-var userProfile = new LegacyUserProfile("IYO");
+//var userProfile = new LegacyUserProfile("IYO");
 
 
 LaunchArgs launchArgs = new();

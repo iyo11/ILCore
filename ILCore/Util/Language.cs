@@ -1,3 +1,4 @@
+using System.Diagnostics.SymbolStore;
 using System.Reflection;
 using System.Xml;
 using ILCore.Languages;

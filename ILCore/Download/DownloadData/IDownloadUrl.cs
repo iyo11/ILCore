@@ -1,8 +1,9 @@
-namespace ILCore.Download.DownloadSource;
+namespace ILCore.Download.DownloadData;
 
 public interface IDownloadUrl
 {
     string VersionList { get; }
+    string VersionListV2 { get; }
 
     string Version { get; }
 

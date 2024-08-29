@@ -6,7 +6,11 @@ namespace ILCore.Util;
 
 public static class NetWorkClient
 {
-    private static readonly HttpClient HttpClient = new();
+    private static readonly SocketsHttpHandler SocketsHttpHandler = new SocketsHttpHandler()
+    {
+        ConnectTimeout = TimeSpan.FromSeconds(3)
+    };
+    private static readonly HttpClient HttpClient = new HttpClient(SocketsHttpHandler);
     
     
     public static async ValueTask<string> PostPairAsync(string url, Dictionary<string, string> dictionary, List<MediaTypeWithQualityHeaderValue> headerValues)
@@ -50,7 +54,7 @@ public static class NetWorkClient
 
     }
 
-    public static async ValueTask<string> GetAsync(string url, AuthenticationHeaderValue value)
+    public static async ValueTask<string> GetAsync(string url, AuthenticationHeaderValue value = null)
     {
         // 设置请求方法和Content-Type头
         HttpClient.DefaultRequestHeaders.Accept.Clear();
