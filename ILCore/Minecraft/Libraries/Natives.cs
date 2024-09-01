@@ -4,7 +4,7 @@ namespace ILCore.Minecraft.Libraries;
 
 public class Natives
 {
-    public async Task Extract(string minecraftPath,string versionName)
+    public async Task ExtractNatives(string minecraftPath,string versionName)
     {
         var libraries = await new Libraries().GetLibraries(minecraftPath,versionName);
         var nativesFolder = $@"{minecraftPath}\versions\{versionName}\natives";

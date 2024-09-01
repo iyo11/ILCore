@@ -7,6 +7,14 @@ public enum DownloadResult
     Canceled,
 }
 
+public class DownloadItemsInfo
+{
+    public int NewItemsCount { get; set; }
+    public int NewItemsBytes { get; set; }
+    public int TotalCount { get; set; }
+    public int TotalBytes { get; set; }
+}
+
 public class DownloadProgress
 {
     public int TotalCount { get; set; }

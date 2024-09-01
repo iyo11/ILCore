@@ -23,18 +23,18 @@ namespace ILCore.Minecraft.Arguments
             {
                 gameArguments = versionObj["minecraftArguments"].ToString();
                 var argumentsStrings = gameArguments.Split(" ");
-                gameArguments = PutMinecraftArguments(argumentsStrings);
+                gameArguments = FormatMinecraftArguments(argumentsStrings);
             }
 
             var jArgumentsToken = versionObj["arguments"];
 
             if (jArgumentsToken is null) return gameArguments;
             var arguments = JsonConvert.DeserializeObject<JsonArguments>(jArgumentsToken.ToString());
-            gameArguments = PutMinecraftArguments(arguments.Game.OfType<string>().ToArray());
+            gameArguments = FormatMinecraftArguments(arguments.Game.OfType<string>().ToArray());
             return gameArguments;
         }
 
-        private string PutMinecraftArguments(IList<string> argumentsStrings)
+        private string FormatMinecraftArguments(IList<string> argumentsStrings)
         {
 
             for (var i = 0; argumentsStrings.Count > i; i += 2)

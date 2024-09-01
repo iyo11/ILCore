@@ -22,7 +22,9 @@ public class Downloader : IDisposable
     public event Action<DownloadProgress> ProgressChanged;
     public event Action<DownloadItem> DownloadItemCompleted;
     
-    private ImmutableList<DownloadItem> _downloadItems;
+    public event Action<DownloadItemsInfo> DownloadItemsInfoChanged; 
+    
+    private List<DownloadItem> _downloadItems;
 
     private int _totalBytes;
     private int _downloadedBytes;
@@ -32,7 +34,10 @@ public class Downloader : IDisposable
     private int _completedCount;
     private int _failedCount;
     
-    private static Timer _timer;
+    private bool _isDisposed;
+    private bool _isCompleted;
+    
+    private Timer _timer;
 
     public Downloader()
     {
@@ -50,6 +55,11 @@ public class Downloader : IDisposable
 
         _cancellationTokenSource = new CancellationTokenSource();
         _parallelOptions.CancellationToken = _cancellationTokenSource.Token;
+
+        Completed += (_) =>
+        {
+            _isCompleted = true;
+        };
     }
 
     private void Observe()
@@ -64,7 +74,7 @@ public class Downloader : IDisposable
     public void Setup(IEnumerable<DownloadItem> downloadItems)
     {
         // Initialize states
-        _downloadItems = downloadItems.ToImmutableList();
+        _downloadItems = downloadItems.ToList();
         _totalBytes = _downloadItems.Sum(item => item.Size);
         _downloadedBytes = 0;
         _previousDownloadedBytes = 0;
@@ -79,8 +89,41 @@ public class Downloader : IDisposable
             _cancellationTokenSource = new CancellationTokenSource();
             _parallelOptions.CancellationToken = _cancellationTokenSource.Token;
         }
-
         _autoResetEvent.Reset();
+        
+        DownloadItemsInfoChanged?.Invoke(new DownloadItemsInfo()
+        {
+            TotalBytes = _totalBytes,
+            TotalCount =  _totalCount,
+            NewItemsBytes = _totalBytes,
+            NewItemsCount = _totalCount
+        });
+    }
+
+    public void Add(IEnumerable<DownloadItem> downloadItems)
+    {
+        if (!_cancellationTokenSource.IsCancellationRequested)
+        {
+            // Initialize states
+            var newDownloadItems = downloadItems.ToImmutableList();
+            var newDownloadItemsBytes = _downloadItems.Sum(item => item.Size);
+            _downloadItems.AddRange(newDownloadItems);
+            _totalCount += newDownloadItems.Count;
+            _totalBytes += newDownloadItemsBytes;
+            DownloadItemsInfoChanged?.Invoke(new DownloadItemsInfo()
+            {
+                TotalBytes = _totalBytes,
+                TotalCount =  _totalCount,
+                NewItemsBytes = newDownloadItemsBytes,
+                NewItemsCount = newDownloadItems.Count
+            });
+        }
+        else
+        {
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
+            _parallelOptions.CancellationToken = _cancellationTokenSource.Token;
+        }
     }
         
     public async ValueTask<bool> StartAsync()
@@ -161,9 +204,9 @@ public class Downloader : IDisposable
             {
                 //retry
             }
-            if (Path.IsPathRooted(downloadItem.Path))
+            if (!Directory.Exists(downloadItem.Path))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(downloadItem.Path) ?? string.Empty);
+                Directory.CreateDirectory(downloadItem.Path);
             }
             
             // 创建一个缓冲区，大小为64KB
@@ -236,6 +279,7 @@ public class Downloader : IDisposable
             await _timer.DisposeAsync();
             //throw new Exception(e.Message);
             // If is not caused by cancellation, mark as failure
+            Console.WriteLine(e.Message);
             if (_cancellationTokenSource.IsCancellationRequested) throw new Exception(e.Message);
         }
         
@@ -269,7 +313,7 @@ public class Downloader : IDisposable
     public void Retry()
     {
         //"Retrying incomplete downloads"
-        _downloadItems = _downloadItems.Where(item => !item.IsCompleted).ToImmutableList();
+        _downloadItems = _downloadItems.Where(item => !item.IsCompleted).ToList();
         _failedCount = 0;
         //var remainingCount = _totalCount - _completedCount;
         //var remainingBytes = _downloadItems.Sum(item => item.Size);
@@ -295,6 +339,7 @@ public class Downloader : IDisposable
     {
         if (!disposing) return;
         //"Disposed"
+        _isDisposed = true;
         _timer.Dispose();
         _httpClient.Dispose();
         _cancellationTokenSource.Dispose();

@@ -9,7 +9,8 @@ Console.WriteLine(userProfile.MinecraftToken);
 */
 
 
-using ILCore.Analyzer.Minecraft;using ILCore.Languages;
+using ILCore.Analyzer.Minecraft;
+using ILCore.Languages;
 using ILCore.Launch;
 using ILCore.Minecraft.Libraries;
 using ILCore.Minecraft.Options;
@@ -66,7 +67,7 @@ var info = new LaunchInfo
 
 var launchArg = await launchArgs.PrepareArguments(info);
 
-await new Natives().Extract(minecraftPath, versionName);
+await new Natives().ExtractNatives(minecraftPath, versionName);
 await new Options().SetOptions(minecraftPath, versionName, new Dictionary<string, string>()
 {
     {"lang","zh_cn"}
