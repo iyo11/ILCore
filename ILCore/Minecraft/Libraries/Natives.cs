@@ -4,13 +4,13 @@ namespace ILCore.Minecraft.Libraries;
 
 public class Natives
 {
-    public async Task ExtractNatives(string minecraftPath,string versionName)
+    public async Task ExtractNatives(string minecraftPath, string versionName)
     {
-        var libraries = await new Libraries().GetLibraries(minecraftPath,versionName);
+        var libraries = await new Libraries().GetLibraries(minecraftPath, versionName);
         var nativesFolder = $@"{minecraftPath}\versions\{versionName}\natives";
 
         if (libraries is null) return;
-        
+
         //取高版本Libs
         var nativeLibraries = libraries
             .Where(lib => lib.Type == LibraryType.Native)
@@ -29,20 +29,16 @@ public class Natives
                 var nameArgs = lib.Path.Split('/');
                 return nameArgs[^2];
             }));
-        
+
         foreach (var nativeLibrary in nativeLibraries)
-        {
             try
             {
                 await Compress.ExtractAsync($@"{minecraftPath}\libraries\{nativeLibrary.Path}", nativesFolder,
-                    nativeLibrary.Exclude,[".dll"]);
+                    nativeLibrary.Exclude, [".dll"]);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
-        }
     }
-    
-    
 }

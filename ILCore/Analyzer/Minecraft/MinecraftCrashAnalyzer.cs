@@ -14,13 +14,13 @@ public class MinecraftCrashAnalyzer
             message = FuzzyAnalyze(minecraftLog.Message);
             if (!string.IsNullOrEmpty(message))
                 yield return message;
-            yield return  message;
+            yield return message;
         }
     }
 
     private string AccurateAnalyze(string message)
     {
-        var  messages = message.Split(":");
+        var messages = message.Split(":");
         if (messages.Length < 2) return null;
         return messages[0] switch
         {
@@ -42,7 +42,7 @@ public class MinecraftCrashAnalyzer
             not null when message.Contains("java.lang.ClassNotFoundException:") => Language.GetValue(
                 "ClassNotFoundException", message.Split(':')[1]),
             not null when message.Contains("java.lang.ClassCastException: class jdk.") => Language.GetValue(
-                "ClassCastException"),    
+                "ClassCastException"),
             not null when message.Contains("java.lang.OutOfMemoryError:") => Language.GetValue(
                 "OutOfMemoryError", message.Split(':')[1]),
             _ => null

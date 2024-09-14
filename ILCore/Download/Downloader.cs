@@ -2,348 +2,343 @@ using System.Buffers;
 using System.Collections.Immutable;
 using System.Threading.Tasks.Dataflow;
 using ILCore.Download.DownloadData;
+using ILCore.Util;
 
-namespace ILCore.Download;
-
-public class Downloader : IDisposable
+namespace ILCore.Download
 {
-    private const int MaxRetryCount = 3;
-    private const int BufferSize = 4096; // byte
-    private const int UpdateInterval = 1000; // second
-    
-    private readonly ArrayPool<byte> _bufferPool;
-    private readonly HttpClient _httpClient;
-    private readonly AutoResetEvent _autoResetEvent;
-    private readonly ExecutionDataflowBlockOptions _parallelOptions;
-    
-    private CancellationTokenSource _cancellationTokenSource;
-    
-    public event Action<DownloadResult> Completed;
-    public event Action<DownloadProgress> ProgressChanged;
-    public event Action<DownloadItem> DownloadItemCompleted;
-    
-    public event Action<DownloadItemsInfo> DownloadItemsInfoChanged; 
-    
-    private List<DownloadItem> _downloadItems;
-
-    private int _totalBytes;
-    private int _downloadedBytes;
-    private int _previousDownloadedBytes;
-    
-    private int _totalCount;
-    private int _completedCount;
-    private int _failedCount;
-    
-    private bool _isDisposed;
-    private bool _isCompleted;
-    
-    private Timer _timer;
-
-    public Downloader()
+    public class Downloader : IDisposable
     {
-        _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.Connection.Add("keep-alive");
-        
-        _bufferPool = ArrayPool<byte>.Create(BufferSize, Environment.ProcessorCount * 2);
-        
-        _autoResetEvent = new AutoResetEvent(true);
-        
-        _parallelOptions = new ExecutionDataflowBlockOptions
+        private const int MaxRetryCount = 3;
+        private const int BufferSize = 4096; // bytes
+        private const int UpdateInterval = 1000; // milliseconds
+
+        private readonly ArrayPool<byte> _bufferPool;
+        private readonly HttpClient _httpClient;
+        private readonly ExecutionDataflowBlockOptions _parallelOptions;
+        private readonly AutoResetEvent _autoResetEvent;
+
+        private CancellationTokenSource _cancellationTokenSource;
+        private Timer _timer;
+
+        private int _completedCount;
+        private int _downloadedBytes;
+        private int _failedCount;
+        private bool _isCompleted;
+        private int _previousDownloadedBytes;
+        private int _totalBytes;
+        private int _totalCount;
+
+        private List<DownloadItem> _downloadItems;
+        private bool _isDisposed;
+
+        public Downloader()
         {
-            MaxDegreeOfParallelism = Environment.ProcessorCount * 2,
-        };
+            _httpClient = CreateHttpClient();
+            _httpClient.DefaultRequestHeaders.Connection.Add("keep-alive");
 
-        _cancellationTokenSource = new CancellationTokenSource();
-        _parallelOptions.CancellationToken = _cancellationTokenSource.Token;
+            _bufferPool = ArrayPool<byte>.Create(BufferSize, Environment.ProcessorCount * 2);
+            _autoResetEvent = new AutoResetEvent(true);
 
-        Completed += (_) =>
-        {
-            _isCompleted = true;
-        };
-    }
+            _parallelOptions = new ExecutionDataflowBlockOptions
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount * 2
+            };
 
-    private void Observe()
-    {
-        _timer = new Timer((_) =>
-        {
-            UpdateDownloadProgress();
-        }, null, 0, UpdateInterval);
-    }
-
-
-    public void Setup(IEnumerable<DownloadItem> downloadItems)
-    {
-        // Initialize states
-        _downloadItems = downloadItems.ToList();
-        _totalBytes = _downloadItems.Sum(item => item.Size);
-        _downloadedBytes = 0;
-        _previousDownloadedBytes = 0;
-
-        _totalCount = _downloadItems.Count;
-        _completedCount = 0;
-        _failedCount = 0;
-
-        if (_cancellationTokenSource.IsCancellationRequested)
-        {
-            _cancellationTokenSource.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
             _parallelOptions.CancellationToken = _cancellationTokenSource.Token;
-        }
-        _autoResetEvent.Reset();
-        
-        DownloadItemsInfoChanged?.Invoke(new DownloadItemsInfo()
-        {
-            TotalBytes = _totalBytes,
-            TotalCount =  _totalCount,
-            NewItemsBytes = _totalBytes,
-            NewItemsCount = _totalCount
-        });
-    }
 
-    public void Add(IEnumerable<DownloadItem> downloadItems)
-    {
-        if (!_cancellationTokenSource.IsCancellationRequested)
+            Completed += _ =>
+            {
+                _isCompleted = true;
+            };
+        }
+
+        private HttpClient CreateHttpClient()
         {
-            // Initialize states
+            var socketsHttpHandler = new SocketsHttpHandler
+            {
+            };
+            return new HttpClient(socketsHttpHandler);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public event Action<DownloadResult> Completed;
+        public event Action<DownloadProgress> ProgressChanged;
+        public event Action<DownloadItem> DownloadItemCompleted;
+        public event Action<DownloadItemsInfo> DownloadItemsInfoChanged;
+
+        private void Observe()
+        {
+            _timer = new Timer(_ => UpdateDownloadProgress(), null, 0, UpdateInterval);
+        }
+
+        public void Setup(IEnumerable<DownloadItem> downloadItems)
+        {
+            ArgumentNullException.ThrowIfNull(downloadItems);
+
+            _downloadItems = downloadItems.ToList();
+            _totalBytes = _downloadItems.Sum(item => item.Size);
+            _downloadedBytes = 0;
+            _previousDownloadedBytes = 0;
+
+            _totalCount = _downloadItems.Count;
+            _completedCount = 0;
+            _failedCount = 0;
+
+            ResetCancellationTokenSource();
+            _autoResetEvent.Reset();
+
+            DownloadItemsInfoChanged?.Invoke(new DownloadItemsInfo
+            {
+                TotalBytes = _totalBytes,
+                TotalCount = _totalCount,
+                NewItemsBytes = _totalBytes,
+                NewItemsCount = _totalCount
+            });
+        }
+
+        public void Add(IEnumerable<DownloadItem> downloadItems)
+        {
+            ArgumentNullException.ThrowIfNull(downloadItems);
+
+            if (_cancellationTokenSource.IsCancellationRequested)
+            {
+                ResetCancellationTokenSource();
+            }
+
             var newDownloadItems = downloadItems.ToImmutableList();
-            var newDownloadItemsBytes = _downloadItems.Sum(item => item.Size);
+            var newDownloadItemsBytes = newDownloadItems.Sum(item => item.Size);
+
             _downloadItems.AddRange(newDownloadItems);
             _totalCount += newDownloadItems.Count;
             _totalBytes += newDownloadItemsBytes;
-            DownloadItemsInfoChanged?.Invoke(new DownloadItemsInfo()
+
+            DownloadItemsInfoChanged?.Invoke(new DownloadItemsInfo
             {
                 TotalBytes = _totalBytes,
-                TotalCount =  _totalCount,
+                TotalCount = _totalCount,
                 NewItemsBytes = newDownloadItemsBytes,
                 NewItemsCount = newDownloadItems.Count
             });
         }
-        else
-        {
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = new CancellationTokenSource();
-            _parallelOptions.CancellationToken = _cancellationTokenSource.Token;
-        }
-    }
-        
-    public async ValueTask<bool> StartAsync()
-    {
-        while (true)
-        {
-            Observe();
-            try
-            {
-                var downloader = new ActionBlock<DownloadItem>(async item =>
-                {
-                    for (var i = 0; i < MaxRetryCount && !_cancellationTokenSource.IsCancellationRequested; i++)
-                    {
-                        if (await DownloadFileAsync(item, i))
-                        {
-                            break;
-                        }
-                    }
-                }, _parallelOptions);
 
-                foreach (var item in _downloadItems)
+        public async ValueTask<bool> StartAsync()
+        {
+            while (true)
+            {
+                Observe();
+                try
                 {
-                    downloader.Post(item);
+                    var downloader = new ActionBlock<DownloadItem>(async item =>
+                    {
+                        for (var i = 0; i < MaxRetryCount && !_cancellationTokenSource.Token.IsCancellationRequested; i++)
+                        {
+                            if (await DownloadFileAsync(item, i))
+                            {
+                                break;
+                            }
+                        }
+                        if (!item.IsCompleted)
+                        {
+                            Interlocked.Increment(ref _failedCount);
+                            Interlocked.Add(ref _downloadedBytes, - item.DownloadedBytes);
+                            item.DownloadedBytes = 0;
+                            Interlocked.Exchange(ref _previousDownloadedBytes, _downloadedBytes);
+                        }
+                    }, _parallelOptions);
+
+                    foreach (var item in _downloadItems)
+                    {
+                        downloader.Post(item);
+                    }
+
+                    downloader.Complete();
+                    await downloader.Completion;
+                }
+                catch (OperationCanceledException e)
+                {
+                    Log.Error(e.Message);
+                }
+                finally
+                {
+                    _timer?.Dispose();
+                    UpdateDownloadProgress();
                 }
 
-                downloader.Complete();
-                await downloader.Completion;
+                if (_completedCount == _totalCount)
+                {
+                    Completed?.Invoke(DownloadResult.Succeeded);
+                    return true;
+                }
+
+                CleanUpIncompleteFiles();
+
+                if (_failedCount > 0 && !_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    Completed?.Invoke(DownloadResult.Incomplete);
+                }
+
+                _autoResetEvent.WaitOne();
+
+                if (!_cancellationTokenSource.Token.IsCancellationRequested) continue;
+                Completed?.Invoke(DownloadResult.Canceled);
+                return false;
             }
-            catch (OperationCanceledException)
-            {
-                //_logService.Info(nameof(DownloadService), "Download canceled");
-            }
+        }
 
-            await _timer.DisposeAsync();
-            // Ensure the last progress report is fired
-            UpdateDownloadProgress();
-
-            // Succeeded
-            if (_completedCount == _totalCount)
-            {
-                //下载成功
-                Completed?.Invoke(DownloadResult.Succeeded);
-                return true;
-            }
-
-
-            // Clean incomplete files
+        private void CleanUpIncompleteFiles()
+        {
             foreach (var item in _downloadItems.Where(item => !item.IsCompleted && File.Exists(item.Path)))
             {
                 File.Delete(item.Path);
             }
-
-            if (_failedCount > 0 && !_cancellationTokenSource.IsCancellationRequested)
-            {
-                //下载失败
-                Completed?.Invoke(DownloadResult.Incomplete);
-            }
-
-            // Wait for retry or cancel
-            _autoResetEvent.WaitOne();
-
-            // Canceled
-            if (!_cancellationTokenSource.IsCancellationRequested) continue;
-            //下载取消
-
-            Completed?.Invoke(DownloadResult.Canceled);
-            return false;
         }
-    }
-    
-    
 
-    private async Task<bool> DownloadFileAsync(DownloadItem downloadItem, int retryTimes)
-    {
-        try
+        private async Task<bool> DownloadFileAsync(DownloadItem downloadItem, int retryTimes)
         {
             if (retryTimes > 0)
             {
-                //retry
+                Log.Info($"Retry download {downloadItem.Name} Time:{retryTimes}");
+                downloadItem.RetryCount = retryTimes;
             }
-            if (!Directory.Exists(downloadItem.Path))
-            {
-                Directory.CreateDirectory(downloadItem.Path);
-            }
-            
-            // 创建一个缓冲区，大小为64KB
+
             var buffer = _bufferPool.Rent(BufferSize);
-            
-            // 发送GET请求，并等待响应
-            var request = new HttpRequestMessage(HttpMethod.Get, downloadItem.Url);
-            var response =
-                await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, _cancellationTokenSource.Token);
-            
-            // 判断请求是否成功,如果失败则返回 false
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                return (false);
+                if (!Directory.Exists(downloadItem.Path))
+                {
+                    Directory.CreateDirectory(downloadItem.Path);
+                }
+
+                var response = await SendDownloadRequestAsync(downloadItem);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Response code {response.StatusCode}");
+                }
+
+                await ProcessDownloadResponseAsync(downloadItem, response, buffer);
+                return true;
             }
-            
-            // 获取响应内容长度
+            catch (OperationCanceledException e)
+            {
+                Log.Error($"{downloadItem.Name} > {e.Message}");
+            }
+            catch (Exception e)
+            {
+                Log.Error($"{downloadItem.Name} > {e.Message}");
+            }
+            finally
+            {
+                _bufferPool.Return(buffer);
+            }
+
+            return false;
+        }
+
+        private async Task<HttpResponseMessage> SendDownloadRequestAsync(DownloadItem downloadItem)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, downloadItem.Url);
+            return await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, _cancellationTokenSource.Token);
+        }
+
+        private async Task ProcessDownloadResponseAsync(DownloadItem downloadItem, HttpResponseMessage response, byte[] buffer)
+        {
             var contentLength = response.Content.Headers.ContentLength ?? 0;
+
             if (downloadItem.Size == 0)
             {
                 downloadItem.Size = (int)contentLength;
                 Interlocked.Add(ref _totalBytes, downloadItem.Size);
             }
+
             downloadItem.IsPartialContentSupported = response.Headers.AcceptRanges.Contains("bytes");
-            // 获取响应流
+
             await using var httpStream = await response.Content.ReadAsStreamAsync(_cancellationTokenSource.Token);
-            // 创建一个文件流，并将响应内容写入文件流
-            await using var fileStream = File.Open($@"{downloadItem.Path}\{downloadItem.Name}", FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+            await using var fileStream = File.Open($@"{downloadItem.Path}\{downloadItem.Name}", FileMode.Create, FileAccess.Write, FileShare.Read);
+
             var timeout = TimeSpan.FromSeconds(Math.Max(downloadItem.Size / 16384.0, 30.0));
             using var timeoutCts = new CancellationTokenSource(timeout);
             using var readCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token, timeoutCts.Token);
-            
+
             int bytesRead;
             while ((bytesRead = await httpStream.ReadAsync(buffer, readCts.Token)) > 0)
             {
-                // 检查是否已经取消了任务
-                if (_cancellationTokenSource.IsCancellationRequested)
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    // 如果任务已经取消，关闭文件流，并删除已经下载的文件
                     fileStream.Close();
                     File.Delete(downloadItem.Path);
-                    break;
+                    return;
                 }
+
                 await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), readCts.Token);
                 downloadItem.DownloadedBytes += bytesRead;
                 Interlocked.Add(ref _downloadedBytes, bytesRead);
             }
-            //判断下载是否取消
-            if (_cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                fileStream.Close();
-                response.Dispose();
-                return (false);
-            }
 
-            // Download successful
             downloadItem.IsCompleted = true;
             DownloadItemCompleted?.Invoke(downloadItem);
             Interlocked.Increment(ref _completedCount);
-            
-            
-            fileStream.Close();
-            response.Dispose();
-            return (true);
         }
-        catch (Exception e)
+
+        private void UpdateDownloadProgress()
         {
-            // 返回false表示文件下载失败
-            //return (false);
-            await _timer.DisposeAsync();
-            //throw new Exception(e.Message);
-            // If is not caused by cancellation, mark as failure
-            Console.WriteLine(e.Message);
-            if (_cancellationTokenSource.IsCancellationRequested) throw new Exception(e.Message);
+            var diffBytes = _downloadedBytes - _previousDownloadedBytes;
+            _previousDownloadedBytes = _downloadedBytes;
+
+            var progress = new DownloadProgress
+            {
+                TotalCount = _totalCount,
+                CompletedCount = _completedCount,
+                FailedCount = _failedCount,
+                TotalBytes = _totalBytes,
+                DownloadedBytes = _downloadedBytes,
+                Speed = diffBytes / (UpdateInterval / 1000.0)
+            };
+
+            ProgressChanged?.Invoke(progress);
         }
-        
-        // If is not caused by cancellation, mark as failure
-        if (_cancellationTokenSource.IsCancellationRequested) return (false);
-        Interlocked.Increment(ref _failedCount);
-        Interlocked.Add(ref _downloadedBytes, -downloadItem.DownloadedBytes);
-        downloadItem.DownloadedBytes = 0;
-        Interlocked.Exchange(ref _previousDownloadedBytes, _downloadedBytes);
-        return false;
-    }
-    
-    private void UpdateDownloadProgress()
-    {
-        // Calculate speed
-        var diffBytes = _downloadedBytes - _previousDownloadedBytes;
-        _previousDownloadedBytes = _downloadedBytes;
 
-        var progress = new DownloadProgress
+        public void Retry()
         {
-            TotalCount = _totalCount,
-            CompletedCount = _completedCount,
-            FailedCount = _failedCount,
-            TotalBytes = _totalBytes,
-            DownloadedBytes = _downloadedBytes,
-            Speed = diffBytes / (UpdateInterval / (double)1000),
-        };
-        ProgressChanged?.Invoke(progress);
-    }
-    
-    public void Retry()
-    {
-        //"Retrying incomplete downloads"
-        _downloadItems = _downloadItems.Where(item => !item.IsCompleted).ToList();
-        _failedCount = 0;
-        //var remainingCount = _totalCount - _completedCount;
-        //var remainingBytes = _downloadItems.Sum(item => item.Size);
-        //"Remaining items count: {remainingCount}.";
-        //"Remaining items size (Bytes): {remainingBytes}.";
-        _autoResetEvent.Set();
-    }
+            _downloadItems = _downloadItems.Where(item => !item.IsCompleted).ToList();
+            _failedCount = 0;
+            _autoResetEvent.Set();
+        }
 
-    public void Cancel()
-    {
-        _cancellationTokenSource.Cancel();
-        _timer.Dispose();
-        _autoResetEvent.Set();
-    }
-    
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+        public void Cancel()
+        {
+            _cancellationTokenSource.Cancel();
+            _timer?.Dispose();
+            _autoResetEvent.Set();
+        }
 
-    private void Dispose(bool disposing)
-    {
-        if (!disposing) return;
-        //"Disposed"
-        _isDisposed = true;
-        _timer.Dispose();
-        _httpClient.Dispose();
-        _cancellationTokenSource.Dispose();
-        _autoResetEvent.Dispose();
+        private void ResetCancellationTokenSource()
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
+            _parallelOptions.CancellationToken = _cancellationTokenSource.Token;
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_isDisposed) return;
+
+            if (disposing)
+            {
+                _timer?.Dispose();
+                _httpClient.Dispose();
+                _cancellationTokenSource.Dispose();
+                _autoResetEvent.Dispose();
+            }
+
+            _isDisposed = true;
+        }
     }
-    
 }

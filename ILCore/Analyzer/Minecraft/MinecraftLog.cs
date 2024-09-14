@@ -16,7 +16,7 @@ public class MinecraftLog
         builder.Append(string.IsNullOrEmpty(LogSource) ? "" : $"{LogSource} > ");
         builder.Append(Type != MinecraftLogType.Unknown ? $"{Type} > " : "");
         builder.Append(Message);
-        return  builder.ToString();
+        return builder.ToString();
     }
 }
 
@@ -27,5 +27,5 @@ public enum MinecraftLogType
     Warn,
     Error,
     Debug,
-    Fatal,
+    Fatal
 }

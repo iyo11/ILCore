@@ -21,11 +21,11 @@ public class MicrosoftOAuth2(
         var userProfile = new UserProfile();
     }
     */
-    
+
     public async Task<IUserProfile> AuthorizeAsync()
     {
         var userProfile = new MsaUserProfile();
-        
+
         if (!HttpListener.IsSupported)
         {
             Console.WriteLine("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
@@ -36,7 +36,7 @@ public class MicrosoftOAuth2(
             throw new ArgumentException("Prefixes cannot be null or empty.", nameof(uri));
 
         var redirectUri = uri + "/";
-        
+
         var authUri = NetWorkClient.BuildUrl("https://login.live.com/oauth20_authorize.srf",
             new SortedDictionary<string, string>
             {
@@ -45,7 +45,7 @@ public class MicrosoftOAuth2(
                 { "redirect_uri", uri },
                 { "scope", scope }
             });
-        
+
         new Process
         {
             StartInfo = new ProcessStartInfo
@@ -54,12 +54,12 @@ public class MicrosoftOAuth2(
                 UseShellExecute = true
             }
         }.Start();
-        
+
 
         using var listener = new HttpListener();
         listener.Prefixes.Add(redirectUri);
         listener.Start();
-        
+
         HttpListenerContext context = null;
         byte[] buffer;
         try
@@ -70,31 +70,34 @@ public class MicrosoftOAuth2(
             if (url != null && url.Contains("code="))
             {
                 var code = url[(url.LastIndexOf('=') + 1)..];
-                
+
                 var microsoftAuth = new MicrosoftAuth();
                 var xboxAuth = new XboxAuth();
                 var minecraftAuth = new MinecraftAuth();
-                
-                var microsoftAuthToken = await microsoftAuth.MicrosoftAuthAsync(code,clientId,uri,scope);
 
+                var microsoftAuthToken = await microsoftAuth.MicrosoftAuthAsync(code, clientId, uri, scope);
+                Console.WriteLine(microsoftAuthToken.AccessToken);
+                
                 var xboxAuthToken = await xboxAuth.XboxAuthAsync(microsoftAuthToken.AccessToken);
+                Console.WriteLine(xboxAuthToken);
                 
                 var xtstAuthToken = await xboxAuth.ObtainXstsAsync(xboxAuthToken);
-                    
+                Console.WriteLine(xtstAuthToken.XtstToken);
 
                 var minecraftToken = await minecraftAuth.MinecraftAuthAsync(xtstAuthToken);
+                Console.WriteLine(minecraftToken);
 
                 var profile = await minecraftAuth.GetProfileAsync(minecraftToken);
                 userProfile = JsonConvert.DeserializeObject<MsaUserProfile>(profile.ToString());
                 userProfile.RefreshToken = microsoftAuthToken.RefreshToken;
                 userProfile.AccessToken = minecraftToken;
-                buffer = new RedirectPage(redirectMessage,AuthStatus.Success).ToPageBuffers();
+                buffer = new RedirectPage(redirectMessage, AuthStatus.Success).ToPageBuffers();
             }
             else
             {
-                throw  new Exception("Invalid request");
+                throw new Exception("Invalid request");
             }
-            
+
             response.ContentLength64 = buffer.Length;
             await using var output = response.OutputStream;
             await output.WriteAsync(buffer);
@@ -102,7 +105,7 @@ public class MicrosoftOAuth2(
         catch (Exception e)
         {
             redirectMessage.ContentError = e.ToString();
-            buffer = new RedirectPage(redirectMessage,AuthStatus.Error).ToPageBuffers();
+            buffer = new RedirectPage(redirectMessage, AuthStatus.Error).ToPageBuffers();
             if (context != null)
             {
                 var response = context.Response;
@@ -115,7 +118,7 @@ public class MicrosoftOAuth2(
         {
             listener.Stop();
         }
-        
-        return  userProfile;
+
+        return userProfile;
     }
 }

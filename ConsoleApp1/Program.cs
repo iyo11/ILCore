@@ -9,13 +9,10 @@ Console.WriteLine(userProfile.MinecraftToken);
 */
 
 
-using ILCore.Analyzer.Minecraft;
-using ILCore.Languages;
 using ILCore.Launch;
 using ILCore.Minecraft.Libraries;
 using ILCore.Minecraft.Options;
 using ILCore.OAuth;
-using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
 using ILCore.Util;
 
@@ -31,17 +28,18 @@ const string versionName = "1.16.5";
 
 
 const string maxMemory = "2048";
-const string jvmArgs = " -XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true";
+const string jvmArgs =
+    " -XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true";
 
 const string clientId = "288ec5dd-6736-4d4b-9b96-30e083a8cad2";
 const string redirectUri = "http://localhost:29116/authentication-response";
 const string scope = "XboxLive.signin offline_access";
 
-var minecraftOAuth2 = new MicrosoftOAuth2(clientId:clientId,uri:redirectUri,new RedirectMessage
+var minecraftOAuth2 = new MicrosoftOAuth2(clientId, redirectUri, new RedirectMessage
 {
-   TitleSuccess = Language.GetValue("Success"),
-   ContentSuccess = Language.GetValue("Success")
-   //...
+    TitleSuccess = Language.GetValue("Success"),
+    ContentSuccess = Language.GetValue("Success")
+    //...
 });
 var userProfile = await minecraftOAuth2.AuthorizeAsync();
 
@@ -68,35 +66,22 @@ var info = new LaunchInfo
 var launchArg = await launchArgs.PrepareArguments(info);
 
 await new Natives().ExtractNatives(minecraftPath, versionName);
-await new Options().SetOptions(minecraftPath, versionName, new Dictionary<string, string>()
+await new Options().SetOptions(minecraftPath, versionName, new Dictionary<string, string>
 {
-    {"lang","zh_cn"}
+    { "lang", "zh_cn" }
 });
 
-var minecraftProcess = new MinecraftProcessBuilder().BuildProcess(javaPath,launchArg);
+var minecraftProcess = new MinecraftProcessBuilder().BuildProcess(javaPath, launchArg);
 
-minecraftProcess.MinecraftLogOutPut += (minecraftLog) =>
+minecraftProcess.MinecraftLogOutPut += minecraftLog => { Console.WriteLine(minecraftLog.ToString()); };
+
+minecraftProcess.MinecraftLogCrash += errors =>
 {
-    Console.WriteLine(minecraftLog.ToString());
+    foreach (var log in errors) Console.WriteLine(log);
 };
 
-minecraftProcess.MinecraftLogCrash += (errors) => 
-{
-    foreach (var log in errors)
-    {
-        Console.WriteLine(log);
-    }
-};
+minecraftProcess.MinecraftLaunchSuccess += () => { Console.WriteLine("启动成功"); };
 
-minecraftProcess.MinecraftLaunchSuccess += () =>
-{
-    Console.WriteLine("启动成功");
-};
-
-minecraftProcess.MinecraftLaunchFailed += () =>
-{
-    Console.WriteLine("启动失败");
-};
+minecraftProcess.MinecraftLaunchFailed += () => { Console.WriteLine("启动失败"); };
 
 await minecraftProcess.Start();
-

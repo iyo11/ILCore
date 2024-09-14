@@ -1,22 +1,20 @@
-﻿using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace ILCore.Minecraft.Arguments
+namespace ILCore.Minecraft.Arguments;
+
+public class JvmArguments
 {
-    public class JvmArguments
+    public string ToLaunchArguments(JObject versionObj)
     {
-        public string ToLaunchArguments(JObject versionObj)
-        {
-            var jArgumentsToken = versionObj["arguments"];
-            string[] argumentsStrings = [];
+        var jArgumentsToken = versionObj["arguments"];
+        string[] argumentsStrings = [];
 
-            if (jArgumentsToken is null) return string.Join(" ", argumentsStrings);
-            var arguments = JsonConvert.DeserializeObject<JsonArguments>(jArgumentsToken.ToString());
-            argumentsStrings = arguments.Jvm.OfType<string>().ToArray();
+        if (jArgumentsToken is null) return string.Join(" ", argumentsStrings);
+        var arguments = JsonConvert.DeserializeObject<JsonArguments>(jArgumentsToken.ToString());
+        argumentsStrings = arguments.Jvm.OfType<string>().ToArray();
 
 
-            return string.Join(" ", Array.ConvertAll(argumentsStrings, argument => $"\"{argument}\""));
-        }
-
+        return string.Join(" ", Array.ConvertAll(argumentsStrings, argument => $"\"{argument}\""));
     }
 }

@@ -1,84 +1,117 @@
 ﻿using System.Net;
-using System.Net.Http.Headers;
 using System.Text;
 
 namespace ILCore.Util;
 
 public static class NetWorkClient
 {
-    private static readonly SocketsHttpHandler SocketsHttpHandler = new SocketsHttpHandler()
-    {
-        ConnectTimeout = TimeSpan.FromSeconds(3)
-    };
-    private static readonly HttpClient HttpClient = new HttpClient(SocketsHttpHandler);
-    
-    
-    public static async ValueTask<string> PostPairAsync(string url, Dictionary<string, string> dictionary, List<MediaTypeWithQualityHeaderValue> headerValues)
-    {
-        // 将键值对转换为 FormUrlEncodedContent
-        var content = new FormUrlEncodedContent(dictionary);
-        return await PostAsync(url, content, headerValues);
-    }
+    private static HttpClient _httpClient = CreateHttpClient();
+    private static CookieContainer _cookieContainer = new();
 
-    public static async ValueTask<string> PostJsonAsync(string url, string json, List<MediaTypeWithQualityHeaderValue> headerValues)
+    private static HttpClient CreateHttpClient()
     {
-        var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-        // 将键值对转换为 FormUrlEncodedContent
-        return await PostAsync(url, httpContent, headerValues);
-    }
-
-    private static async ValueTask<string> PostAsync(string url, HttpContent content, List<MediaTypeWithQualityHeaderValue> values)
-    {
-        // 设置请求方法和Content-Type头
-        HttpClient.DefaultRequestHeaders.Accept.Clear();
-
-        if (values != null)
+        var socketsHttpHandler = new SocketsHttpHandler
         {
-            foreach (var headerValue in values)
+            ConnectTimeout = TimeSpan.FromSeconds(60),
+            CookieContainer = _cookieContainer
+        };
+        return new HttpClient(socketsHttpHandler);
+    }
+
+    public static void InitHttpClient()
+    {
+        _cookieContainer = new CookieContainer();
+        _httpClient = CreateHttpClient();
+    }
+
+    public static async Task<IEnumerable<Cookie>> GetCookies(string url)
+    {
+        var cookieContainer = new CookieContainer();
+        var socketsHttpHandler = new SocketsHttpHandler
+        {
+            ConnectTimeout = TimeSpan.FromSeconds(60),
+            CookieContainer = cookieContainer
+        };
+        var httpClient = new HttpClient(socketsHttpHandler);
+        var uri = new Uri(url);
+        try
+        {
+            var response = await httpClient.GetAsync(uri);
+            if (!response.IsSuccessStatusCode)
             {
-                HttpClient.DefaultRequestHeaders.Accept.Add(headerValue);
+                Log.Warn($"Request failed with status code {response.StatusCode}.");
+                return [];
             }
+
+            var cookies = cookieContainer.GetCookies(uri).ToList();
+            return cookies;
         }
-
-        // 发起POST请求
-        var response = await HttpClient.PostAsync(url, content);
-
-        // 检查响应状态码
-        string responseString = null;
-        if (response.IsSuccessStatusCode)
+        catch (Exception e)
         {
-            // 获取响应内容（这里假设是JSON格式并解析）
-            responseString = await response.Content.ReadAsStringAsync();
+            Log.Error($"[GetCookiesException] {e}");
         }
-        return responseString;
 
+        return [];
     }
 
-    public static async ValueTask<string> GetAsync(string url, AuthenticationHeaderValue value = null)
+    public static async Task<List<string>> GetCookiesAsStringAsync(string url)
     {
-        // 设置请求方法和Content-Type头
-        HttpClient.DefaultRequestHeaders.Accept.Clear();
+        return (await GetCookies(url)).Select(cookie => cookie.ToString()).ToList();
+    }
 
-        if (value != null)
+    public static async Task<string> GetContentAsStringAsync(string url)
+    {
+        var response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
         {
-            HttpClient.DefaultRequestHeaders.Authorization = value;
+            return await response.Content.ReadAsStringAsync();
         }
-
-        // 发起Get请求
-        var response = await HttpClient.GetAsync(url);
-
-        // 检查响应状态码
-        string responseString = null;
-        if (response.IsSuccessStatusCode)
-        {
-            // 获取响应内容（这里假设是JSON格式并解析）
-            responseString = await response.Content.ReadAsStringAsync();
-        }
-        return responseString;
-
+        return null;
     }
 
 
+    public static async ValueTask<HttpResponseMessage> GetAsync(string url, Dictionary<string, string> headers = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        if (headers is not null)
+            foreach (var keyValuePair in headers)
+                request.Headers.Add(keyValuePair.Key, keyValuePair.Value);
+        try
+        {
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) Log.Warn($"Request failed with status code {response.StatusCode}.");
+            return response;
+        }
+        catch (Exception e)
+        {
+            Log.Error($"[GetException] {e}");
+            return null;
+        }
+    }
+
+    public static async ValueTask<HttpResponseMessage> PostAsync(
+        string url,
+        HttpContent content,
+        Dictionary<string, string> headers = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        if (headers is not null)
+            foreach (var keyValuePair in headers)
+                request.Headers.Add(keyValuePair.Key, keyValuePair.Value);
+        if (content is not null) request.Content = content;
+
+        try
+        {
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) Log.Warn($"Request failed with status code {response.StatusCode}.");
+            return response;
+        }
+        catch (Exception e)
+        {
+            Log.Error($"{e}");
+            return null;
+        }
+    }
 
     public static string BuildUrl(string url, SortedDictionary<string, string> dic)
     {
@@ -86,7 +119,6 @@ public static class NetWorkClient
         stringBuilder.Append(url);
         stringBuilder.Append('?');
         stringBuilder.Append(BuildParam(dic));
-
         return stringBuilder.ToString();
     }
 
@@ -94,15 +126,12 @@ public static class NetWorkClient
     {
         var stringBuilder = new StringBuilder();
         foreach (var item in dic)
-        {
             stringBuilder
                 .Append(item.Key)
                 .Append('=')
                 .Append(WebUtility.UrlEncode(item.Value))
                 .Append('&');
-        }
-        
-        return stringBuilder.ToString();
 
+        return stringBuilder.ToString();
     }
 }

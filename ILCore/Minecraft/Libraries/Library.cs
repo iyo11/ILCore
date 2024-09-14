@@ -18,6 +18,7 @@ public class Library
 
     public JsonRule[] Rules { get; set; }
 }
+
 public enum LibraryType
 {
     Minecraft,

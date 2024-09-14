@@ -2,8 +2,8 @@
 
 public class JsonLibrary
 {
-    public string Name;
     public JsonLibraryDownloads Downloads;
+    public string Name;
     public Dictionary<string, string> Natives;
     public JsonExtract Extract { get; set; }
     public JsonRule[] Rules { get; set; }
@@ -16,7 +16,6 @@ public class JsonLibraryDownloads
 
     public Dictionary<string, JsonDownloadFile> Classifiers { get; set; }
 }
-
 
 public class JsonDownloadFile
 {

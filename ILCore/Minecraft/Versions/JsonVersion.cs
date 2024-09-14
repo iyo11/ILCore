@@ -31,5 +31,5 @@ public class VersionsItem
 public class JsonVersion
 {
     public Latest Latest { get; set; }
-    public List <VersionsItem > Versions { get; set; }
+    public List<VersionsItem> Versions { get; set; }
 }

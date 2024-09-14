@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Text;
 using ILCore.Util;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,16 +20,15 @@ public class XboxAuth
             RelyingParty = "http://auth.xboxlive.com",
             TokenType = "JWT"
         });
-        var xboxAuthorizationJson = await NetWorkClient.PostJsonAsync(
+        var xboxResponseMessage = await NetWorkClient.PostAsync(
             "https://user.auth.xboxlive.com/user/authenticate",
-            xboxAuthPostJson,
-            [new MediaTypeWithQualityHeaderValue("application/json")]
+            new StringContent(xboxAuthPostJson, Encoding.UTF8, "application/json")
         );
 
-        var xboxAuthObject = JObject.Parse(xboxAuthorizationJson);
+        var xboxAuthObject = JObject.Parse(await xboxResponseMessage.Content.ReadAsStringAsync());
         return xboxAuthObject["Token"]?.ToString();
     }
-    
+
     public async Task<XtstAuthToken> ObtainXstsAsync(string xboxToken)
     {
         var xtstAuthPostJson = JsonConvert.SerializeObject(new XtstContent
@@ -45,15 +44,12 @@ public class XboxAuth
             RelyingParty = "rp://api.minecraftservices.com/",
             TokenType = "JWT"
         });
-        var xtstAuthorizationJson = await NetWorkClient.PostJsonAsync(
+        var xtstResponseMessage = await NetWorkClient.PostAsync(
             "https://xsts.auth.xboxlive.com/xsts/authorize",
-            xtstAuthPostJson,
-            [
-                new MediaTypeWithQualityHeaderValue("application/json")
-            ]
+            new StringContent(xtstAuthPostJson, Encoding.UTF8, "application/json")
         );
 
-        var xtstAuthObject = JObject.Parse(xtstAuthorizationJson);
+        var xtstAuthObject = JObject.Parse(await xtstResponseMessage.Content.ReadAsStringAsync());
         return new XtstAuthToken
         {
             Uhs = xtstAuthObject["DisplayClaims"]?["xui"]?[0]?["uhs"]?.ToString(),

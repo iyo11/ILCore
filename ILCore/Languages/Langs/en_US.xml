@@ -3,10 +3,10 @@
     <!-- OAuth -->
     <Resource Key="Success">Success</Resource>
     <Resource Key="Failed">Failed</Resource>
-    
+
     <!-- Launcher -->
     <Resource Key="JsonNotFound">JsonNotFound</Resource>
-    
+
     <!-- CrashAnalyzers -->
     <Resource Key="ForgeMissingMods">Mod{0}requires{1}</Resource>
     <Resource Key="ClassNotFoundException">ClassNotFound:{0} > Wrong Java or Mod version</Resource>

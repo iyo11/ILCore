@@ -6,13 +6,15 @@ namespace ILCore.OAuth.RedirectUri;
 public class RedirectPage(RedirectMessage redirectMessage, AuthStatus authStatus)
 {
     private const string RedirectPageNamespace = "ILCore.OAuth.RedirectUri";
+
     public byte[] ToPageBuffers()
-    { 
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{RedirectPageNamespace}.RedirectPage.html");
+    {
+        using var stream = Assembly.GetExecutingAssembly()
+            .GetManifestResourceStream($"{RedirectPageNamespace}.RedirectPage.html");
         if (stream == null) return null;
         using var reader = new StreamReader(stream);
         var htmlContent = reader.ReadToEnd();
-        
+
         byte[] buffer;
         switch (authStatus)
         {
@@ -29,14 +31,14 @@ public class RedirectPage(RedirectMessage redirectMessage, AuthStatus authStatus
                 buffer = Encoding.UTF8.GetBytes(htmlContent);
                 break;
             case AuthStatus.Interrupt:
-                default:
-                    htmlContent = htmlContent
-                        .Replace("${Header}", redirectMessage.TitleInterrupt)
-                        .Replace("${Body}", redirectMessage.ContentInterrupt);
+            default:
+                htmlContent = htmlContent
+                    .Replace("${Header}", redirectMessage.TitleInterrupt)
+                    .Replace("${Body}", redirectMessage.ContentInterrupt);
                 buffer = Encoding.UTF8.GetBytes(htmlContent);
                 break;
         }
 
-        return  buffer;
+        return buffer;
     }
 }

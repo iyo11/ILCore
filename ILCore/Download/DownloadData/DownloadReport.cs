@@ -4,7 +4,7 @@ public enum DownloadResult
 {
     Incomplete,
     Succeeded,
-    Canceled,
+    Canceled
 }
 
 public class DownloadItemsInfo

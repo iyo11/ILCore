@@ -1,23 +1,21 @@
 ﻿using System.Globalization;
 using System.Runtime.InteropServices;
 
-namespace ILCore.Util
+namespace ILCore.Util;
+
+public static class EnvironmentRuntime
 {
-    public static class EnvironmentRuntime
+    public static readonly OSPlatform Os = RuntimeInformation.OSDescription switch
     {
-        public static readonly OSPlatform Os = RuntimeInformation.OSDescription switch
-        {
-            _ when RuntimeInformation.IsOSPlatform(OSPlatform.Linux) => OSPlatform.Linux,
-            _ when RuntimeInformation.IsOSPlatform(OSPlatform.Windows) => OSPlatform.Windows,
-            _ when RuntimeInformation.IsOSPlatform(OSPlatform.OSX) => OSPlatform.OSX,
-            _ => OSPlatform.Create("UNKNOWN")
-        };
+        _ when RuntimeInformation.IsOSPlatform(OSPlatform.Linux) => OSPlatform.Linux,
+        _ when RuntimeInformation.IsOSPlatform(OSPlatform.Windows) => OSPlatform.Windows,
+        _ when RuntimeInformation.IsOSPlatform(OSPlatform.OSX) => OSPlatform.OSX,
+        _ => OSPlatform.Create("UNKNOWN")
+    };
 
-        public static readonly string Architecture = RuntimeInformation.OSArchitecture.ToString();
+    public static readonly string Architecture = RuntimeInformation.OSArchitecture.ToString();
 
-        public static readonly bool Is64Bit = Environment.Is64BitOperatingSystem;
-        
-        public static readonly string Lang = CultureInfo.CurrentCulture.Name.Replace("-", "_");
-        
-    }
+    public static readonly bool Is64Bit = Environment.Is64BitOperatingSystem;
+
+    public static readonly string Lang = CultureInfo.CurrentCulture.Name.Replace("-", "_");
 }

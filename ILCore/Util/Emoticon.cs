@@ -2,7 +2,7 @@ namespace ILCore.Util;
 
 public static class Emoticon
 {
-    private static readonly string[] Emoticons = 
+    private static readonly string[] Emoticons =
     [
         "(^^ゞ",
         "(^_^;)",
@@ -21,5 +21,4 @@ public static class Emoticon
     {
         return Emoticons[new Random().Next(0, Emoticons.Length)];
     }
-    
 }

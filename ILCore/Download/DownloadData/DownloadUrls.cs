@@ -28,6 +28,7 @@ public class OfficialUrl : IDownloadUrl
 
 public class BmclApiUrl : IDownloadUrl
 {
+    public string Maven => "https://bmclapi2.bangbang93.com/maven/";
     public string VersionList => "https://bmclapi2.bangbang93.com/mc/game/version_manifest.json";
     public string VersionListV2 => "https://bmclapi2.bangbang93.com/mc/game/version_manifest_v2.json";
 
@@ -36,8 +37,6 @@ public class BmclApiUrl : IDownloadUrl
     public string Library => "https://bmclapi2.bangbang93.com/libraries/";
 
     public string Json => "https://bmclapi2.bangbang93.com/";
-
-    public string Maven => "https://bmclapi2.bangbang93.com/maven/";
 
     public string Asset => "https://bmclapi2.bangbang93.com/assets/";
 

@@ -5,33 +5,30 @@ namespace ILCore.Analyzer.Minecraft;
 
 public class MinecraftLogAnalyzer
 {
-
     private static readonly Regex LogPattern = Regexes.LogRegex();
-    private static readonly string[] TypeArray = ["INFO", "WARN", "FATAL", "ERROR" , "DEBUG" , "UNKNOWN"];
+    private static readonly string[] TypeArray = ["INFO", "WARN", "FATAL", "ERROR", "DEBUG", "UNKNOWN"];
 
     public MinecraftLog Analyze(string log)
     {
         if (string.IsNullOrEmpty(log))
             return new MinecraftLog
             {
-                Message = null,
+                Message = null
             };
         var match = LogPattern.Match(log);
         if (!match.Success)
         {
             if (log.Contains("Exception") || log.Contains("Error"))
-            {
                 return new MinecraftLog
                 {
                     Message = log,
                     Type = MinecraftLogType.Error,
                     Time = $"[{DateTime.Now:HH:mm:ss}]",
-                    LogSource = "[Exception]",
+                    LogSource = "[Exception]"
                 };
-            }
             return new MinecraftLog
             {
-                Message = log,
+                Message = log
             };
         }
 
@@ -39,8 +36,8 @@ public class MinecraftLogAnalyzer
         var source = match.Groups[2].Value;
         var message = match.Groups[3].Value;
         var type = Enum.Parse<MinecraftLogType>(
-            (TypeArray)
-            .FirstOrDefault(x => source.Contains(x)) ?? "Unknown",
+            TypeArray
+                .FirstOrDefault(x => source.Contains(x)) ?? "Unknown",
             true);
 
 
@@ -53,6 +50,4 @@ public class MinecraftLogAnalyzer
         };
         return minecraftLog;
     }
-
-
 }

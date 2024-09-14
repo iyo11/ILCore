@@ -3,8 +3,6 @@ using ILCore.Minecraft.Assets;
 using ILCore.Minecraft.Versions;
 using Newtonsoft.Json.Linq;
 
-
-
 var api = new OfficialUrl();
 var versions = new Versions(api);
 
@@ -31,9 +29,6 @@ var versionJObject = JObject.Parse(versionJson);
 
 var assets = new Assets();
 
-var assetsJson = await assets.ToJsonAsset(versionJObject,api);
+var assetsJson = await assets.ToJsonAsset(versionJObject, api);
 
-foreach (var value in assetsJson.Objects.Values.ToList())
-{
-    Console.WriteLine(api.Asset + value.Path);
-}
+foreach (var value in assetsJson.Objects.Values.ToList()) Console.WriteLine(api.Asset + value.Path);

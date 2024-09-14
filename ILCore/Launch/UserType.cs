@@ -1,8 +1,7 @@
-﻿namespace ILCore.Launch
+﻿namespace ILCore.Launch;
+
+public enum UserType
 {
-    public enum UserType
-    {
-        legacy,
-        msa
-    }
+    legacy,
+    msa
 }

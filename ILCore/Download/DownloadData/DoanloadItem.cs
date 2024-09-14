@@ -15,4 +15,6 @@ public class DownloadItem
     public bool IsPartialContentSupported { get; set; }
 
     public bool IsCompleted { get; set; }
+
+    public int RetryCount { get; set; } = 0;
 }

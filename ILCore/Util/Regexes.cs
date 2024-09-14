@@ -9,7 +9,7 @@ public partial class Regexes
 
     [GeneratedRegex(@"\(([^()]*)\)", RegexOptions.Compiled)]
     public static partial Regex RoundBrackets();
-    
+
     [GeneratedRegex(@"\[([^[\]]*)\]", RegexOptions.Compiled)]
     public static partial Regex SquareBrackets();
 }
