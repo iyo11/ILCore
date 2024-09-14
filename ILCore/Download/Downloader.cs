@@ -8,6 +8,8 @@ namespace ILCore.Download
 {
     public class Downloader : IDisposable
     {
+        public bool IsCompleted;
+        
         private const int MaxRetryCount = 3;
         private const int BufferSize = 4096; // bytes
         private const int UpdateInterval = 1000; // milliseconds
@@ -23,17 +25,23 @@ namespace ILCore.Download
         private int _completedCount;
         private int _downloadedBytes;
         private int _failedCount;
-        private bool _isCompleted;
         private int _previousDownloadedBytes;
         private int _totalBytes;
         private int _totalCount;
 
         private List<DownloadItem> _downloadItems;
         private bool _isDisposed;
+        
+        
+        public event Action<DownloadResult> Completed;
+        public event Action<DownloadProgress> ProgressChanged;
+        public event Action<DownloadItem> DownloadItemCompleted;
+        public event Action<DownloadItemsInfo> DownloadItemsInfoChanged;
 
         public Downloader()
         {
-            _httpClient = CreateHttpClient();
+            _httpClient = new HttpClient();
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
             _httpClient.DefaultRequestHeaders.Connection.Add("keep-alive");
 
             _bufferPool = ArrayPool<byte>.Create(BufferSize, Environment.ProcessorCount * 2);
@@ -49,28 +57,16 @@ namespace ILCore.Download
 
             Completed += _ =>
             {
-                _isCompleted = true;
+                IsCompleted = true;
             };
         }
-
-        private HttpClient CreateHttpClient()
-        {
-            var socketsHttpHandler = new SocketsHttpHandler
-            {
-            };
-            return new HttpClient(socketsHttpHandler);
-        }
-
+        
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        public event Action<DownloadResult> Completed;
-        public event Action<DownloadProgress> ProgressChanged;
-        public event Action<DownloadItem> DownloadItemCompleted;
-        public event Action<DownloadItemsInfo> DownloadItemsInfoChanged;
 
         private void Observe()
         {
@@ -166,7 +162,7 @@ namespace ILCore.Download
                 }
                 finally
                 {
-                    _timer?.Dispose();
+                    await _timer.DisposeAsync();
                     UpdateDownloadProgress();
                 }
 
@@ -181,6 +177,7 @@ namespace ILCore.Download
                 if (_failedCount > 0 && !_cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     Completed?.Invoke(DownloadResult.Incomplete);
+                    return false;
                 }
 
                 _autoResetEvent.WaitOne();
@@ -203,7 +200,7 @@ namespace ILCore.Download
         {
             if (retryTimes > 0)
             {
-                Log.Info($"Retry download {downloadItem.Name} Time:{retryTimes}");
+                Log.Debug($"Retry download {downloadItem.Name} Time:{retryTimes}");
                 downloadItem.RetryCount = retryTimes;
             }
 
