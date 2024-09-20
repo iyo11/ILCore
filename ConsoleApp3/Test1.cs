@@ -1,7 +1,5 @@
 using ILCore.Download;
 using ILCore.Download.DownloadData;
-using ILCore.Minecraft.Assets;
-using ILCore.Minecraft.Versions;
 using ILCore.Util;
 
 namespace ConsoleApp3;
@@ -18,53 +16,49 @@ public class Test1
             {
                 Name = "Test0.pdf",
                 Path = "E:/DownloadTest/Test1",
-                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf",
+                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf"
             },
             new()
             {
                 Name = "Test1.pdf",
                 Path = "E:/DownloadTest/Test1",
-                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf",
+                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf"
             },
             new()
             {
                 Name = "Test2.pdf",
                 Path = "E:/DownloadTest/Test1",
-                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf",
+                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf"
             },
             new()
             {
                 Name = "Test3.pdf",
                 Path = "E:/DownloadTest/Test1",
-                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf",
+                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf"
             },
             new()
             {
                 Name = "Test5.pdf",
                 Path = "E:/DownloadTest/Test1",
-                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf",
+                Url = "https://www.leomay.com/upload/file/mmo-20170707165001.pdf"
             }
         };
 
         downloadManager.DownloadItemsInfoChanged += s =>
         {
-            Log.Debug(
-                $"Add: Count-{s.NewItemsCount} Bytes-{s.NewItemsBytes} Total: Count-{s.TotalCount} Bytes-{s.TotalBytes}");
+            Log.Info(
+                $"Add: Count-{s.NewItemsCount} Bytes-{Converters.ConvertBitsToBestUnit(s.NewItemsBytes)} Total: Count-{s.TotalCount} Bytes-{Converters.ConvertBitsToBestUnit(s.TotalBytes)}");
         };
 
         downloadManager.ProgressChanged += s =>
         {
-            Log.Debug(
-                $"Speed:{s.Speed} Percent:{s.DownloadedBytes}/{s.TotalBytes} Complete:{s.CompletedCount}/{s.TotalCount} Failed:{s.FailedCount}");
+            Log.Info(
+                $"Speed:{Converters.ConvertBitsToBestUnit(s.Speed)} Percent:{Converters.ConvertBitsToBestUnit(s.DownloadedBytes)}/{Converters.ConvertBitsToBestUnit(s.TotalBytes)} Complete:{s.CompletedCount}/{s.TotalCount} Failed:{s.FailedCount}");
         };
 
-        downloadManager.Completed += s =>
-        {
-            Console.WriteLine(s.ToString());
-        };
+        downloadManager.Completed += s => { Console.WriteLine(s.ToString()); };
 
-        downloadManager.DownloadItemCompleted += s => { Console.WriteLine($"{s.Name} Completed Retry Time {s.RetryCount}"); };
-
+        downloadManager.DownloadItemCompleted += s => { Log.Debug($"{s.Name} Completed [Retry Time {s.RetryCount}]"); };
 
         downloadManager.Setup(downloadItems);
 

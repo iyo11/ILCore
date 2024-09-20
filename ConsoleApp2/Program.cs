@@ -3,17 +3,19 @@ using ILCore.Minecraft.Assets;
 using ILCore.Minecraft.Versions;
 using Newtonsoft.Json.Linq;
 
-var api = new OfficialUrl();
-var versions = new Versions(api);
+var url = new OfficialUrl();
+var versions = new Versions();
+
+var versionDownloadService = versions.GetDownloadService(url);
 
 
-var latestVersion = versions.GetLatestVersion(LatestType.Release);
+var latestVersion = versionDownloadService.GetLatestVersion(LatestType.Release);
 
-var versionsOldAlpha = versions.GetVersions(VersionType.old_alpha);
+var versionsOldAlpha = versionDownloadService.GetVersions(VersionType.old_alpha);
 
-var versionsRelease = versions.GetVersions(VersionType.release);
+var versionsRelease = versionDownloadService.GetVersions(VersionType.release);
 
-var versionsSnapshot = versions.GetVersions(VersionType.snapshot);
+var versionsSnapshot = versionDownloadService.GetVersions(VersionType.snapshot);
 
 //Console.WriteLine(latestVersion.Url);
 
@@ -23,12 +25,12 @@ var versionsSnapshot = versions.GetVersions(VersionType.snapshot);
     Console.WriteLine(versionsItem.Url);
 }*/
 
-var versionJson = await versions.GetVersionJson(versionsRelease[0].Url);
+var versionJson = await versionDownloadService.GetVersionJson(versionsRelease[0]);
 
 var versionJObject = JObject.Parse(versionJson);
 
 var assets = new Assets();
 
-var assetsJson = await assets.ToJsonAsset(versionJObject, api);
+var assetsJson = await assets.ToJsonAsset(versionJObject);
 
-foreach (var value in assetsJson.Objects.Values.ToList()) Console.WriteLine(api.Asset + value.Path);
+foreach (var value in assetsJson.Objects.Values.ToList()) Console.WriteLine(url.Asset + value.Path);

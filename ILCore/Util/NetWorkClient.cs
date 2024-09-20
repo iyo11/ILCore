@@ -62,10 +62,7 @@ public static class NetWorkClient
     public static async Task<string> GetContentAsStringAsync(string url)
     {
         var response = await _httpClient.GetAsync(url);
-        if (!response.IsSuccessStatusCode)
-        {
-            return await response.Content.ReadAsStringAsync();
-        }
+        if (!response.IsSuccessStatusCode) return await response.Content.ReadAsStringAsync();
         return null;
     }
 

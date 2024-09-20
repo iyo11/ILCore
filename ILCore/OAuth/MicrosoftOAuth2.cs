@@ -13,7 +13,7 @@ public class MicrosoftOAuth2(
     string clientId,
     string uri,
     RedirectMessage redirectMessage,
-    string scope = "XboxLive.signin offline_access")
+    string scope)
 {
     /*
     public async Task<UserProfile> RefreshAsync(string refreshToken)
@@ -77,10 +77,10 @@ public class MicrosoftOAuth2(
 
                 var microsoftAuthToken = await microsoftAuth.MicrosoftAuthAsync(code, clientId, uri, scope);
                 Console.WriteLine(microsoftAuthToken.AccessToken);
-                
+
                 var xboxAuthToken = await xboxAuth.XboxAuthAsync(microsoftAuthToken.AccessToken);
                 Console.WriteLine(xboxAuthToken);
-                
+
                 var xtstAuthToken = await xboxAuth.ObtainXstsAsync(xboxAuthToken);
                 Console.WriteLine(xtstAuthToken.XtstToken);
 

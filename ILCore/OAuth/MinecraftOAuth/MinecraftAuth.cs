@@ -14,7 +14,8 @@ public class MinecraftAuth
         var minecraftAuthorizationResponseMessage = await NetWorkClient.PostAsync(
             "https://api.minecraftservices.com/authentication/login_with_xbox",
             new StringContent(minecraftAuthPostJson, Encoding.UTF8, "application/json"));
-        var minecraftAuthObject = JObject.Parse(await minecraftAuthorizationResponseMessage.Content.ReadAsStringAsync());
+        var minecraftAuthObject =
+            JObject.Parse(await minecraftAuthorizationResponseMessage.Content.ReadAsStringAsync());
         return minecraftAuthObject["access_token"]?.ToString();
     }
 
@@ -24,7 +25,7 @@ public class MinecraftAuth
             "https://api.minecraftservices.com/minecraft/profile",
             new Dictionary<string, string>
             {
-                {"Authorization", $"Bearer {minecraftToken}"}
+                { "Authorization", $"Bearer {minecraftToken}" }
             }
         );
         var profileObject = JObject.Parse(await profileJResponseMessage.Content.ReadAsStringAsync());

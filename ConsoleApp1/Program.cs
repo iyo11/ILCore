@@ -13,18 +13,20 @@ using ILCore.Launch;
 using ILCore.Minecraft.Libraries;
 using ILCore.Minecraft.Options;
 using ILCore.OAuth;
+using ILCore.OAuth.MinecraftOAuth;
 using ILCore.OAuth.RedirectUri;
 using ILCore.Util;
 
-const string javaPath = @"C:\Program Files\Java\jdk1.8.0_202\jre\bin\javaw.exe";
-//const string javaPath = @"C:\Users\IYO\AppData\Roaming\.minecraft\runtime\java-runtime-delta\bin\javaw.exe";
-const string minecraftPath = @"G:\Minecraft\.minecraft";
+//const string javaPath = @"C:\Program Files\Java\jdk1.8.0_202\jre\bin\javaw.exe";
+const string javaPath = @"C:\Users\IYO\AppData\Roaming\.minecraft\runtime\java-runtime-delta\bin\javaw.exe";
+//const string minecraftPath = @"G:\Minecraft\.minecraft";
+const string minecraftPath = @"E:\MinecraftTest\.minecraft";
 //Fail
 
 
 //Success
 
-const string versionName = "1.16.5";
+const string versionName = "test1";
 
 
 const string maxMemory = "2048";
@@ -40,9 +42,9 @@ var minecraftOAuth2 = new MicrosoftOAuth2(clientId, redirectUri, new RedirectMes
     TitleSuccess = Language.GetValue("Success"),
     ContentSuccess = Language.GetValue("Success")
     //...
-});
-var userProfile = await minecraftOAuth2.AuthorizeAsync();
+}, scope);
 
+var userProfile = await minecraftOAuth2.AuthorizeAsync();
 //var userProfile = new LegacyUserProfile("IYO");
 
 

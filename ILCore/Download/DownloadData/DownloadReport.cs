@@ -27,5 +27,5 @@ public class DownloadProgress
 
     public int DownloadedBytes { get; set; }
 
-    public double Speed { get; set; }
+    public long Speed { get; set; }
 }

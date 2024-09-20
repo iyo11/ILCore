@@ -1,5 +1,4 @@
-﻿using System.Text;
-using ILCore.Util;
+﻿using ILCore.Util;
 using Newtonsoft.Json.Linq;
 
 namespace ILCore.OAuth.MicrosoftOAuth;
@@ -22,7 +21,8 @@ public class MicrosoftAuth
         );
 
 
-        var microsoftAuthObject = JObject.Parse(await microsoftAuthorizationResponseMessage.Content.ReadAsStringAsync());
+        var microsoftAuthObject =
+            JObject.Parse(await microsoftAuthorizationResponseMessage.Content.ReadAsStringAsync());
 
         return new MicrosoftAuthToken
         {
@@ -47,7 +47,8 @@ public class MicrosoftAuth
         );
 
 
-        var microsoftAuthObject = JObject.Parse(await microsoftAuthorizationResponseMessage.Content.ReadAsStringAsync());
+        var microsoftAuthObject =
+            JObject.Parse(await microsoftAuthorizationResponseMessage.Content.ReadAsStringAsync());
 
         return new MicrosoftAuthToken
         {

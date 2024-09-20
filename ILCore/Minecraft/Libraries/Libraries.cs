@@ -1,4 +1,5 @@
-﻿using ILCore.Util;
+﻿using ILCore.Download.DownloadData;
+using ILCore.Util;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,6 +15,23 @@ public class Libraries
         var json = await File.ReadAllTextAsync(jsonPath);
         var jLibrariesToken = JToken.Parse(json).SelectToken("libraries");
         return ToLibraries(jLibrariesToken);
+    }
+
+    public IEnumerable<DownloadItem> ToDownloadItems(JToken jLibrariesToken, IDownloadUrl downloadUrlApi,
+        string minecraftPath = null)
+    {
+        var libraries = ToLibraries(jLibrariesToken);
+
+        return libraries.Select(obj =>
+            new DownloadItem
+            {
+                Name = null,
+                Path = $"{minecraftPath ?? Environment.CurrentDirectory + "/.minecraft"}/libraries/{obj.Path}",
+                Url = downloadUrlApi.Library + obj.Url,
+                Size = obj.Size,
+                IsCompleted = false,
+                DownloadedBytes = 0
+            });
     }
 
     public IEnumerable<Library> ToLibraries(JToken jLibrariesToken)

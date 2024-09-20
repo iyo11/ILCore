@@ -8,13 +8,13 @@ internal enum LogLevel
     Debug,
     Warn,
     Error,
-    Fatal,
+    Fatal
 }
 
 internal class LogMessage
 {
     public LogLevel Level { get; set; }
-    public DateTime Timestamp { get; set; } 
+    public DateTime Timestamp { get; set; }
     public string Message { get; set; }
     public string CallerName { get; set; }
     public string Path { get; set; }

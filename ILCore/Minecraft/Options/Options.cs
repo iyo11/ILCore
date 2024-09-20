@@ -17,8 +17,8 @@ public class Options
 
     public Dictionary<string, string> ToOptions(string optionText)
     {
+        if (string.IsNullOrWhiteSpace(optionText)) return new Dictionary<string, string>();
         var items = new Dictionary<string, string>();
-
         using var reader = new StringReader(optionText);
         while (reader.ReadLine() is { } line)
         {

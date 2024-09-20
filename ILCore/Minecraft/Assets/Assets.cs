@@ -34,7 +34,7 @@ public class Assets
     }
 
 
-    public async Task<JsonAsset> ToJsonAsset(JObject jObject, IDownloadUrl downloadUrlApi, string minecraftPath = null)
+    public async Task<JsonAsset> ToJsonAsset(JObject jObject, string minecraftPath = null)
     {
         /*var
         var assetsIndexPath = string.IsNullOrEmpty(minecraftPath)? $"{Environment.CurrentDirectory}/assets/index/}"
@@ -43,6 +43,13 @@ public class Assets
 
         }*/
         var json = await DownloadAssetsJsonAsync(jObject);
+        minecraftPath ??= minecraftPath ?? Environment.CurrentDirectory + "/.minecraft";
+        var directory = new DirectoryInfo($"{minecraftPath}/assets/indexes");
+        if (!directory.Exists)
+        {
+            directory.Create();
+        }
+        await File.WriteAllTextAsync($"{minecraftPath}/assets/indexes/{jObject["assetIndex"]["id"]}.json", json);
         return JsonConvert.DeserializeObject<JsonAsset>(json);
     }
 
@@ -53,7 +60,7 @@ public class Assets
             new DownloadItem
             {
                 Name = obj.Hash,
-                Path = $"{minecraftPath ?? Environment.CurrentDirectory + "/.minecraft"}/objects/{obj.Path}",
+                Path = $"{minecraftPath ?? Environment.CurrentDirectory + "/.minecraft"}/assets/objects/{obj.Path}",
                 Url = downloadUrlApi.Asset + obj.Url,
                 Size = obj.Size,
                 IsCompleted = false,
