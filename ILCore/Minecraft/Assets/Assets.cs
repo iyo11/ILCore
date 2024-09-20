@@ -52,6 +52,31 @@ public class Assets
         await File.WriteAllTextAsync($"{minecraftPath}/assets/indexes/{jObject["assetIndex"]["id"]}.json", json);
         return JsonConvert.DeserializeObject<JsonAsset>(json);
     }
+    
+    public Task CopyToVirtualAsync(JsonAsset jsonAsset, string minecraftPath = null)
+    {
+        minecraftPath ??= minecraftPath ?? Environment.CurrentDirectory + "/.minecraft";
+        
+
+        
+        return Task.Run(() =>
+            jsonAsset.Objects?
+                .AsParallel()
+                .ForAll(pair =>
+                {
+                    var objectPath = $"{minecraftPath}/assets/objects/{pair.Value.Path}/{pair.Value.Hash}";
+                    var virtualPath = $"{minecraftPath}/assets/virtual/legacy/{pair.Key}";
+                    var virtualDir = Path.GetDirectoryName(virtualPath);
+                    if (!File.Exists(objectPath) || File.Exists(virtualPath))
+                    {
+                        return;
+                    }
+                    Directory.CreateDirectory(virtualDir);
+                    File.Copy(objectPath, virtualPath);
+                })
+        );
+    }
+
 
     public IEnumerable<DownloadItem> ToDownloadItems(IEnumerable<AssetObject> assetObjects, IDownloadUrl downloadUrlApi,
         string minecraftPath = null)

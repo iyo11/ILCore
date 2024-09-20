@@ -124,6 +124,9 @@ public class VersionsDownload : IVersionsDownload
         downloadManager.Setup(versionDownloadItem).Add(librariesDownloadItems).Add(assetDownloadItems);
         await downloadManager.StartAsync();
 
+        
+        await assets.CopyToVirtualAsync(jassets, minecraftPath);
+        
         return true;
 
     }
