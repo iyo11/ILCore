@@ -8,7 +8,6 @@ var userProfile = await minecraftOAuth2.AuthorizeAsync();
 Console.WriteLine(userProfile.MinecraftToken);
 */
 
-
 using ILCore.Launch;
 using ILCore.Minecraft.Libraries;
 using ILCore.Minecraft.Options;
@@ -23,10 +22,9 @@ const string javaPath = @"C:\Users\IYO\AppData\Roaming\.minecraft\runtime\java-r
 const string minecraftPath = @"E:\MinecraftTest\.minecraft";
 //Fail
 
-
 //Success
 
-const string versionName = "test1";
+const string versionName = "test2";
 
 
 const string maxMemory = "2048";

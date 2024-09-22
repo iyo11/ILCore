@@ -5,8 +5,9 @@ public class Options
     public async Task SetOptions(string minecraftPath, string versionName, Dictionary<string, string> newOptions)
     {
         var optionsFile = Path.Combine(minecraftPath, "versions", versionName, "options.txt");
+        Directory.CreateDirectory(Path.GetDirectoryName(optionsFile));
         if (!File.Exists(optionsFile))
-            File.Create(optionsFile);
+            await File.Create(optionsFile).DisposeAsync();
         var optionsText = await File.ReadAllTextAsync(optionsFile);
         var options = ToOptions(optionsText);
         foreach (var item in newOptions) options[item.Key] = item.Value;

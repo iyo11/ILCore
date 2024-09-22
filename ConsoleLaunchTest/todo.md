@@ -10,6 +10,15 @@
 - ~~[Feat] > Auto set Minecraft language~~
 - ~~[Feat] > Auto into server & Full screen~~
 
+### Installer 
+- [Feat] > Game installer
+- [Feat] > Forge installer
+- [Feat] > LiteLoader installer
+- [Feat] > Fabric installer
+- [Feat] > OptiFine installer
+- [Feat] > CheckIntegrity
+
+
 ### OAuth
 
 - [Feat] > MicrosoftOAuth2 expiresOn

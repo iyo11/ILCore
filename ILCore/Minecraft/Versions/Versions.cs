@@ -116,10 +116,10 @@ public class VersionsDownload : IVersionsDownload
         var versionDownloadItem = await ToDownloadItems(json, minecraftPath, versionName);
         
         var librariesDownloadItems 
-            = libraries.ToDownloadItems(jLibraries, _url, minecraftPath);
+            = await libraries.ToDownloadItems(jLibraries, _url, minecraftPath);
         
         var assetDownloadItems 
-            = assets.ToDownloadItems(jassets.Objects.Values.ToList(), _url, minecraftPath);
+            = await assets.ToDownloadItems(jassets, _url, minecraftPath);
 
         downloadManager.Setup(versionDownloadItem).Add(librariesDownloadItems).Add(assetDownloadItems);
         await downloadManager.StartAsync();

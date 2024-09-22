@@ -16,13 +16,30 @@ public class Libraries
         var jLibrariesToken = JToken.Parse(json).SelectToken("libraries");
         return ToLibraries(jLibrariesToken);
     }
+    
+    public async Task<IEnumerable<Library>> CheckIntegrityAsync(IEnumerable<Library> libraries, string minecraftPath = null)
+    {
+        if (libraries is null) return [];
+        minecraftPath ??= Path.Combine(Environment.CurrentDirectory, ".minecraft");
+        var query = libraries
+            .AsParallel()
+            .Where(lib =>
+            {
+                var libPath = $"{minecraftPath ?? Environment.CurrentDirectory + "/.minecraft"}/libraries/{lib.Path}";
+                return !File.Exists(libPath) || (lib.Sha1 != null && !Crypto.ValidateFileSHA1(libPath, lib.Sha1));
+            });
 
-    public IEnumerable<DownloadItem> ToDownloadItems(JToken jLibrariesToken, IDownloadUrl downloadUrlApi,
+        return query;
+    }
+
+    public async Task<IEnumerable<DownloadItem>> ToDownloadItems(JToken jLibrariesToken, IDownloadUrl downloadUrlApi,
         string minecraftPath = null)
     {
         var libraries = ToLibraries(jLibrariesToken);
-
-        return libraries.Select(obj =>
+        libraries = await CheckIntegrityAsync(libraries, minecraftPath);
+        var queue = libraries
+            .AsParallel()
+            .Select(obj =>
             new DownloadItem
             {
                 Name = null,
@@ -32,6 +49,7 @@ public class Libraries
                 IsCompleted = false,
                 DownloadedBytes = 0
             });
+        return queue;
     }
 
     public IEnumerable<Library> ToLibraries(JToken jLibrariesToken)

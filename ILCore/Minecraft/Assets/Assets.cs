@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using ILCore.Download.DownloadData;
 using ILCore.Util;
 using Newtonsoft.Json;
@@ -56,9 +57,6 @@ public class Assets
     public Task CopyToVirtualAsync(JsonAsset jsonAsset, string minecraftPath = null)
     {
         minecraftPath ??= minecraftPath ?? Environment.CurrentDirectory + "/.minecraft";
-        
-
-        
         return Task.Run(() =>
             jsonAsset.Objects?
                 .AsParallel()
@@ -76,16 +74,36 @@ public class Assets
                 })
         );
     }
+    
+    
+    public async Task<IEnumerable<AssetObject>> CheckIntegrityAsync(JsonAsset jAsset, string minecraftPath = null)
+    {
+        if (jAsset.Objects is null) return [];
+        minecraftPath ??= Path.Combine(Environment.CurrentDirectory, ".minecraft");
+        var query = jAsset.Objects
+            .Select(pair => pair.Value)
+            .AsParallel()
+            .Where(obj =>
+            {
+                var objPath = Path.Combine(minecraftPath, "assets", "objects", obj.Path, obj.Hash);
+                return !File.Exists(objPath) || !Crypto.ValidateFileSHA1(objPath, obj.Hash);
+            })
+            .ToList(); // 确保查询立即执行
+        return query;
+    }
 
 
-    public IEnumerable<DownloadItem> ToDownloadItems(IEnumerable<AssetObject> assetObjects, IDownloadUrl downloadUrlApi,
+    public async Task<IEnumerable<DownloadItem>> ToDownloadItems(JsonAsset jAsset, IDownloadUrl downloadUrlApi,
         string minecraftPath = null)
     {
-        return assetObjects.Select(obj =>
+        var unIntegrityItems = await CheckIntegrityAsync(jAsset, minecraftPath);
+        return unIntegrityItems
+            .AsParallel()
+            .Select(obj =>
             new DownloadItem
             {
                 Name = obj.Hash,
-                Path = $"{minecraftPath ?? Environment.CurrentDirectory + "/.minecraft"}/assets/objects/{obj.Path}",
+                Path = $"{minecraftPath ?? $"{Environment.CurrentDirectory}/.minecraft"}/assets/objects/{obj.Path}",
                 Url = downloadUrlApi.Asset + obj.Url,
                 Size = obj.Size,
                 IsCompleted = false,
